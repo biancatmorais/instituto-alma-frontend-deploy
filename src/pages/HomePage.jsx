@@ -104,7 +104,7 @@ function HomePage() {
       );
     }
 
-    const imageBaseUrl = 'https://instituto-alma-backend-production.up.railway.app/uploads/';
+    const imageBaseUrl = 'https://instituto-alma-backend-production.up.railway.app/api/uploads/';
 
     // Mapeia os dados do banco de dados para os slides
     return atividades.map((atividade, index) => (

@@ -46,7 +46,7 @@ function RelatoriosPage() {
     }
 
     // A URL base do nosso back-end para os ficheiros
-    const fileBaseUrl = 'https://instituto-alma-backend-production.up.railway.app/uploads/';
+    const fileBaseUrl = 'https://instituto-alma-backend-production.up.railway.app/api/uploads/';
 
     // Mapeia os dados do banco para os itens da lista
     return documentos.map((doc) => (

@@ -131,7 +131,7 @@ function AdminPage() {
     setIsLoadingInscricoes(true);
     try {
       if (!token) throw new Error('Acesso negado.');
-      const response = await fetch('https://instituto-alma-backend-production.up.railway.app/api/inscricoes', { headers: { 'Authorization': `Bearer ${token}` }});
+      const response = await fetch('/https://instituto-alma-backend-production.up.railway.app/api/inscricoes', { headers: { 'Authorization': `Bearer ${token}` }});
       if (!response.ok) throw new Error((await response.json()).message);
       setInscricoes(await response.json());
       setErrorInscricoes(null);
@@ -240,7 +240,7 @@ function AdminPage() {
       <tr key={doc.id}>
         <td>{doc.titulo}</td>
         <td>
-          <a href={`https://instituto-alma-backend-production.up.railway.app/uploads/${doc.arquivo_url}`} target="_blank" rel="noopener noreferrer">
+          <a href={`https://instituto-alma-backend-production.up.railway.app/api/uploads/${doc.arquivo_url}`} target="_blank" rel="noopener noreferrer">
             Ver PDF
           </a>
         </td>

@@ -23,7 +23,7 @@ function EditMetaModal({ metaId, onClose, onSave }) {
     const fetchMeta = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`https://instituto-alma-backend-production.up.railway.app/${metaId}`);
+        const response = await fetch(`https://instituto-alma-backend-production.up.railway.app/api/${metaId}`);
         if (!response.ok) throw new Error('Falha ao buscar dados da meta.');
         
         const data = await response.json();
