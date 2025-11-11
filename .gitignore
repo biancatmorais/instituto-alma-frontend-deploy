@@ -1,0 +1,9 @@
+# Dependências
+/node_modules
+
+# Arquivos de ambiente
+.env
+
+# Pasta de build de produção
+/dist
+/build
