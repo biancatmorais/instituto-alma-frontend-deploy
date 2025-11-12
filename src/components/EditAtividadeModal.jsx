@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
+// Define a URL base da API lendo a variável de ambiente.
+// Em desenvolvimento (local), pode ser undefined ou 'http://localhost:4000'.
+// Em produção (Vercel), será o URL do Railway.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
 function EditAtividadeModal({ atividadeId, onClose, onSave }) {
   const { token } = useAuth(); 
   
@@ -29,7 +34,8 @@ function EditAtividadeModal({ atividadeId, onClose, onSave }) {
       }
 
       try {
-        const response = await fetch(`http://localhost:4000/api/atividades/${atividadeId}`, {
+        // MUDANÇA 1: Usando API_BASE_URL
+        const response = await fetch(`${API_BASE_URL}/api/atividades/${atividadeId}`, {
           headers: { 
             'Authorization': `Bearer ${token}` 
           }
@@ -48,8 +54,10 @@ function EditAtividadeModal({ atividadeId, onClose, onSave }) {
         }
         
         const data = await response.json();
+
         setTitulo(data.titulo);
         setDescricao(data.descricao);
+        
         setOldImages({
           img1: data.imagem_url_1,
           img2: data.imagem_url_2,
@@ -90,8 +98,11 @@ function EditAtividadeModal({ atividadeId, onClose, onSave }) {
     if (imagem4) formData.append('imagem_4', imagem4);
 
     try {
-      const response = await fetch(`http://localhost:4000/api/atividades/${atividadeId}`, {
+      // MUDANÇA 2: Usando API_BASE_URL
+      const response = await fetch(`${API_BASE_URL}/api/atividades/${atividadeId}`, {
         method: 'PUT',
+        // Atenção: Quando você envia FormData, você NÃO deve incluir 'Content-Type': 'multipart/form-data' nos headers.
+        // O navegador faz isso automaticamente, e incluí-lo manualmente pode causar erros.
         headers: { 'Authorization': `Bearer ${token}` }, 
         body: formData
       });

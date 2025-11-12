@@ -1,9 +1,7 @@
-# Dependências
-/node_modules
+//node_modules
 
-# Arquivos de ambiente
+# Ignora o arquivo de variáveis secretas (CRÍTICO!)
 .env
 
-# Pasta de build de produção
-/dist
-/build
+# Logs de debug/erros
+npm-debug.log

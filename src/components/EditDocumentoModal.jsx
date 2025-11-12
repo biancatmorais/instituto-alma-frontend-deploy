@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
+// Define a URL base da API lendo a variável de ambiente.
+// Use 'http://localhost:4000' como fallback para desenvolvimento local.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
 function EditDocumentoModal({ documentoId, onClose, onSave }) {
   const { token } = useAuth();
   
@@ -17,7 +21,8 @@ function EditDocumentoModal({ documentoId, onClose, onSave }) {
     const fetchDocumento = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`http://localhost:4000/api/documentos/${documentoId}`);
+        // MUDANÇA 1: Usando API_BASE_URL para buscar dados
+        const response = await fetch(`${API_BASE_URL}/api/documentos/${documentoId}`);
         if (!response.ok) throw new Error('Falha ao buscar dados do documento.');
         
         const data = await response.json();
@@ -48,8 +53,11 @@ function EditDocumentoModal({ documentoId, onClose, onSave }) {
     }
 
     try {
-      const response = await fetch(`http://localhost:4000/api/documentos/${documentoId}`, {
+      // MUDANÇA 2: Usando API_BASE_URL para a requisição PUT
+      const response = await fetch(`${API_BASE_URL}/api/documentos/${documentoId}`, {
         method: 'PUT',
+        // Certifique-se de que o backend não requer o token de autenticação para GET, 
+        // mas sim para PUT (como está configurado aqui).
         headers: { 
           'Authorization': `Bearer ${token}` 
         },
