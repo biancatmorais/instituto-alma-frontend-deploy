@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
 function EditEventoModal({ eventoId, onClose, onSave }) {
   const { token } = useAuth();
   
@@ -17,7 +19,7 @@ function EditEventoModal({ eventoId, onClose, onSave }) {
     const fetchEvento = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`http://localhost:4000/api/eventos/${eventoId}`);
+        const response = await fetch(`${API_BASE_URL}/api/eventos/${eventoId}`);
         if (!response.ok) throw new Error('Falha ao buscar dados do evento.');
         
         const data = await response.json();
@@ -38,7 +40,6 @@ function EditEventoModal({ eventoId, onClose, onSave }) {
     fetchEvento();
   }, [eventoId]);
 
-
   const handleUpdateEvento = async (e) => {
     e.preventDefault();
     setFormError('');
@@ -46,13 +47,13 @@ function EditEventoModal({ eventoId, onClose, onSave }) {
 
     const dadosAtualizados = {
       titulo,
-      data: data, 
+      data,
       local,
       descricao,
     };
 
     try {
-      const response = await fetch(`http://localhost:4000/api/eventos/${eventoId}`, {
+      const response = await fetch(`${API_BASE_URL}/api/eventos/${eventoId}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json', 
@@ -65,12 +66,8 @@ function EditEventoModal({ eventoId, onClose, onSave }) {
       if (!response.ok) throw new Error(data.message || 'Erro ao atualizar evento');
 
       setFormSuccess('Evento atualizado com sucesso!');
-      
       onSave(); 
-      
-      setTimeout(() => {
-        onClose();
-      }, 2000);
+      setTimeout(onClose, 2000);
 
     } catch (err) {
       console.error("Erro ao atualizar evento:", err);
@@ -85,16 +82,13 @@ function EditEventoModal({ eventoId, onClose, onSave }) {
         <h2>Editar Evento</h2>
 
         {isLoading ? (
-          <p>A carregar dados do evento...</p>
+          <p>Carregando dados do evento...</p>
         ) : (
           <form onSubmit={handleUpdateEvento} className="modal-form">
-            
             <div className="form-group">
-              <label htmlFor="edit-evento-titulo" className="form-label">Título</label>
+              <label>Título</label>
               <input 
                 type="text" 
-                id="edit-evento-titulo" 
-                className="form-input" 
                 value={titulo} 
                 onChange={(e) => setTitulo(e.target.value)} 
                 required 
@@ -102,11 +96,9 @@ function EditEventoModal({ eventoId, onClose, onSave }) {
             </div>
 
             <div className="form-group">
-              <label htmlFor="edit-evento-data" className="form-label">Data (AAAA-MM-DD)</label>
+              <label>Data</label>
               <input 
                 type="date" 
-                id="edit-evento-data" 
-                className="form-input" 
                 value={data} 
                 onChange={(e) => setData(e.target.value)} 
                 required 
@@ -114,11 +106,9 @@ function EditEventoModal({ eventoId, onClose, onSave }) {
             </div>
             
             <div className="form-group">
-              <label htmlFor="edit-evento-local" className="form-label">Local</label>
+              <label>Local</label>
               <input 
                 type="text" 
-                id="edit-evento-local" 
-                className="form-input" 
                 value={local} 
                 onChange={(e) => setLocal(e.target.value)} 
                 required 
@@ -126,21 +116,18 @@ function EditEventoModal({ eventoId, onClose, onSave }) {
             </div>
 
             <div className="form-group">
-              <label htmlFor="edit-evento-desc" className="form-label">Descrição (para notificação)</label>
+              <label>Descrição</label>
               <textarea 
-                id="edit-evento-desc" 
-                className="form-textarea" 
                 value={descricao} 
                 onChange={(e) => setDescricao(e.target.value)} 
                 required
-                style={{ backgroundColor: '#fff', minHeight: '100px' }}
               />
             </div>
             
-            {formError && <p style={{ color: 'red', fontWeight: '600', marginBottom: '15px' }}>{formError}</p>}
-            {formSuccess && <p style={{ color: 'green', fontWeight: '600', marginBottom: '15px' }}>{formSuccess}</p>}
+            {formError && <p style={{ color: 'red' }}>{formError}</p>}
+            {formSuccess && <p style={{ color: 'green' }}>{formSuccess}</p>}
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Salvar Alterações do Evento</button>
+            <button type="submit" className="btn btn-primary">Salvar Alterações</button>
           </form>
         )}
       </div>
