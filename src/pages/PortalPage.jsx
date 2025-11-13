@@ -1,191 +1,137 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; 
 
 function PortalPage() {
   const navigate = useNavigate();
-  const { login } = useAuth(); 
 
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginSenha, setLoginSenha] = useState('');
-  const [loginError, setLoginError] = useState(''); 
+  // Estados gerais
+  const [activeTab, setActiveTab] = useState('login'); // login, registro, reset
+  const [loading, setLoading] = useState(false);
 
-  const [regNome, setRegNome] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regSenha, setRegSenha] = useState('');
-  const [registerMessage, setRegisterMessage] = useState(''); 
+  // Estados de formulários
+  const [loginData, setLoginData] = useState({ email: '', senha: '', error: '', success: '' });
+  const [registerData, setRegisterData] = useState({ nome: '', email: '', senha: '', error: '', success: '' });
+  const [resetData, setResetData] = useState({ email: '', error: '', success: '' });
 
-  
-  const handleLogin = async (event) => {
-    event.preventDefault();
-    setLoginError(''); 
+  // Funções genéricas de input
+  const handleChange = (setter) => (e) => {
+    const { name, value } = e.target;
+    setter(prev => ({ ...prev, [name]: value, error: '', success: '' }));
+  };
 
+  // Login
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!loginData.email || !loginData.senha) {
+      setLoginData(prev => ({ ...prev, error: 'Preencha todos os campos.' }));
+      return;
+    }
+    setLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/auth/login', {
+      const response = await fetch('http://localhost:4000/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: loginEmail, senha: loginSenha })
+        body: JSON.stringify({ email: loginData.email, senha: loginData.senha })
       });
-
       const data = await response.json();
-
-      if (response.ok) {
-        console.log('Login bem-sucedido:', data);
-        login(data.token, data.user); 
-        navigate('/dashboard');
-      } else {
-        setLoginError(data.message);
-      }
-    } catch (error) {
-      console.error('Erro de rede no login:', error);
-      setLoginError('Erro: Não foi possível conectar ao servidor.');
+      if (!response.ok) throw new Error(data.message || 'Erro ao fazer login.');
+      localStorage.setItem('token', data.token);
+      setLoginData({ email: '', senha: '', error: '', success: 'Login realizado com sucesso!' });
+      navigate('/dashboard'); // ou rota desejada após login
+    } catch (err) {
+      setLoginData(prev => ({ ...prev, error: err.message }));
+    } finally {
+      setLoading(false);
     }
   };
 
-
-  const handleRegister = async (event) => {
-    event.preventDefault();
-    setRegisterMessage(''); 
-
+  // Registro
+  const handleRegister = async (e) => {
+    e.preventDefault();
+    if (!registerData.nome || !registerData.email || !registerData.senha) {
+      setRegisterData(prev => ({ ...prev, error: 'Preencha todos os campos.' }));
+      return;
+    }
+    setLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/auth/register', {
+      const response = await fetch('http://localhost:4000/api/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome: regNome, email: regEmail, senha: regSenha })
+        body: JSON.stringify({ nome: registerData.nome, email: registerData.email, senha: registerData.senha })
       });
-
       const data = await response.json();
-
-      if (response.status === 201) {
-        setRegisterMessage(data.message); 
-        setRegNome('');
-        setRegEmail('');
-        setRegSenha('');
-      } else {
-        setRegisterMessage(data.message);
-      }
-    } catch (error) {
-      console.error('Erro de rede no registro:', error);
-      setRegisterMessage('Erro: Não foi possível conectar ao servidor.');
+      if (!response.ok) throw new Error(data.message || 'Erro ao registrar.');
+      setRegisterData({ nome: '', email: '', senha: '', error: '', success: 'Cadastro realizado com sucesso!' });
+      setActiveTab('login');
+    } catch (err) {
+      setRegisterData(prev => ({ ...prev, error: err.message }));
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Reset senha
+  const handleReset = async (e) => {
+    e.preventDefault();
+    if (!resetData.email) {
+      setResetData(prev => ({ ...prev, error: 'Informe seu e-mail.' }));
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:4000/api/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetData.email })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Erro ao enviar link de recuperação.');
+      setResetData({ email: '', error: '', success: 'Link enviado para seu e-mail!' });
+    } catch (err) {
+      setResetData(prev => ({ ...prev, error: err.message }));
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <main 
-      className="portal-page-wrapper" 
-      style={{ 
-        backgroundImage: "linear-gradient(rgba(17, 31, 68, 0.7), rgba(17, 31, 68, 0.7)), url('/documentos/paginadoar.JPG')"
-      }}
-    >
-      
-      <div className="portal-header">
-          <h1>PORTAL DO DOADOR</h1>
-          <div className="thin-bar" style={{ backgroundColor: '#6efff1' }}></div>
+    <div className="portal-page">
+      <div className="tabs">
+        <button onClick={() => setActiveTab('login')} className={activeTab === 'login' ? 'active' : ''}>Login</button>
+        <button onClick={() => setActiveTab('registro')} className={activeTab === 'registro' ? 'active' : ''}>Registrar</button>
+        <button onClick={() => setActiveTab('reset')} className={activeTab === 'reset' ? 'active' : ''}>Recuperar Senha</button>
       </div>
 
-      <div className="portal-container">
-        
-        <div className="login-col">
-            <h2>Login</h2>
-            <form onSubmit={handleLogin}>
-              <div className="form-group">
-                  <label htmlFor="login-email" className="form-label">Email</label>
-                  <input 
-                    type="email" 
-                    id="login-email" 
-                    className="form-input" 
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    required 
-                  />
-              </div>
-              <div className="form-group">
-                  <label htmlFor="login-senha" className="form-label">Senha</label>
-                  <input 
-                    type="password" 
-                    id="login-senha" 
-                    className="form-input" 
-                    value={loginSenha}
-                    onChange={(e) => setLoginSenha(e.target.value)}
-                    required 
-                  />
-              </div>
-              
-              {loginError && (
-                <p style={{ color: 'red', textAlign: 'center', marginBottom: '15px', fontWeight: '600' }}>
-                  {loginError}
-                </p>
-              )}
+      {activeTab === 'login' && (
+        <form onSubmit={handleLogin}>
+          {loginData.error && <p className="error">{loginData.error}</p>}
+          {loginData.success && <p className="success">{loginData.success}</p>}
+          <input type="email" name="email" placeholder="Email" value={loginData.email} onChange={handleChange(setLoginData)} />
+          <input type="password" name="senha" placeholder="Senha" value={loginData.senha} onChange={handleChange(setLoginData)} />
+          <button type="submit" disabled={loading}>{loading ? 'Carregando...' : 'Entrar'}</button>
+        </form>
+      )}
 
-              <button type="submit" className="btn btn-primary">Entrar</button>
-            </form>
-        </div>
-        
-        <div className="signup-col">
-            <h2>Inscrição</h2>
-            <form onSubmit={handleRegister}>
-              <div className="form-group">
-                  <label htmlFor="signup-nome" className="form-label">Nome Completo</label>
-                  <input 
-                    type="text" 
-                    id="signup-nome" 
-                    className="form-input"
-                    value={regNome}
-                    onChange={(e) => setRegNome(e.target.value)}
-                    required 
-                  />
-              </div>
-              <div className="form-group">
-                  <label htmlFor="signup-email" className="form-label">Email</label>
-                  <input 
-                    type="email" 
-                    id="signup-email" 
-                    className="form-input" 
-                    value={regEmail}
-                    onChange={(e) => setRegEmail(e.target.value)}
-                    required 
-                  />
-              </div>
-              <div className="form-group">
-                  <label htmlFor="signup-senha" className="form-label">Criar Senha</label>
-                  <input 
-                    type="password" 
-                    id="signup-senha" 
-                    className="form-input" 
-                    value={regSenha}
-                    onChange={(e) => setRegSenha(e.target.value)}
-                    required 
-                  />
-              </div>
+      {activeTab === 'registro' && (
+        <form onSubmit={handleRegister}>
+          {registerData.error && <p className="error">{registerData.error}</p>}
+          {registerData.success && <p className="success">{registerData.success}</p>}
+          <input type="text" name="nome" placeholder="Nome" value={registerData.nome} onChange={handleChange(setRegisterData)} />
+          <input type="email" name="email" placeholder="Email" value={registerData.email} onChange={handleChange(setRegisterData)} />
+          <input type="password" name="senha" placeholder="Senha" value={registerData.senha} onChange={handleChange(setRegisterData)} />
+          <button type="submit" disabled={loading}>{loading ? 'Carregando...' : 'Registrar'}</button>
+        </form>
+      )}
 
-              {registerMessage && (
-                <p style={{ 
-                  color: registerMessage.startsWith('Erro:') ? 'red' : 'green', 
-                  textAlign: 'center', 
-                  marginBottom: '15px', 
-                  fontWeight: '600' 
-                }}>
-                  {registerMessage}
-                </p>
-              )}
-
-              <button type="submit" className="btn btn-red">Criar Conta</button>
-            </form>
-        </div>
-      </div>
-
-      <div className="bottom-color-bars">
-          <div className="bottom-bar" style={{ backgroundColor: '#f06678' }}></div>
-          <div className="bottom-bar" style={{ backgroundColor: '#ffc9fc' }}></div>
-          <div className="bottom-bar" style={{ backgroundColor: '#78e6faff' }}></div>
-          <div className="bottom-bar" style={{ backgroundColor: '#ffc9fc' }}></div>
-          <div className="bottom-bar" style={{ backgroundColor: '#f06678' }}></div>
-          <div className="bottom-bar" style={{ backgroundColor: '#78e6faff' }}></div>
-          <div className="bottom-bar" style={{ backgroundColor: '#ffc9fc' }}></div>
-          <div className="bottom-bar" style={{ backgroundColor: '#f06678' }}></div>
-      </div>
-    </main>
+      {activeTab === 'reset' && (
+        <form onSubmit={handleReset}>
+          {resetData.error && <p className="error">{resetData.error}</p>}
+          {resetData.success && <p className="success">{resetData.success}</p>}
+          <input type="email" name="email" placeholder="Email" value={resetData.email} onChange={handleChange(setResetData)} />
+          <button type="submit" disabled={loading}>{loading ? 'Carregando...' : 'Enviar link'}</button>
+        </form>
+      )}
+    </div>
   );
 }
 
