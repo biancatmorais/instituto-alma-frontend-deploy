@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 
 function EventModal({ onClose }) {
+  // --- ESTADOS (Obrigatórios para o formulário) ---
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [isEnviado, setIsEnviado] = useState(false);
@@ -19,10 +20,19 @@ function EventModal({ onClose }) {
         body: JSON.stringify({ nome, email }),
       });
       
+<<<<<<< HEAD
+=======
+      // Tenta ler o corpo JSON, mas não falha se estiver vazio
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
       let data = {};
       try {
           data = await response.json();
       } catch (jsonError) {
+<<<<<<< HEAD
+=======
+          // Se falhar a leitura (porque o corpo está vazio), 
+          // usaremos uma mensagem padrão se o status for 2xx.
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
           data.message = 'Inscrição realizada com sucesso! Avisaremos sobre novos eventos.';
       }
 
@@ -31,8 +41,15 @@ function EventModal({ onClose }) {
       }
 
       setIsEnviado(true);
+<<<<<<< HEAD
       setFormMessage(data.message); 
 
+=======
+      // Usa a mensagem lida ou a mensagem padrão de sucesso.
+      setFormMessage(data.message); 
+
+      // Limpa os campos após o sucesso
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
       setNome('');
       setEmail('');
 
@@ -42,11 +59,19 @@ function EventModal({ onClose }) {
 
     } catch (error) {
       console.error('Erro no formulário do modal:', error);
+<<<<<<< HEAD
+=======
+      // Mostra o erro 
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
       setFormMessage(error.message);
       setIsEnviado(true); 
     }
   };
   
+<<<<<<< HEAD
+=======
+  // --- JSX (O que aparece na tela) ---
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>

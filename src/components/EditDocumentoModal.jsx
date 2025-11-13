@@ -17,6 +17,10 @@ function EditDocumentoModal({ documentoId, onClose, onSave }) {
     const fetchDocumento = async () => {
       setIsLoading(true);
       try {
+<<<<<<< HEAD
+=======
+        // Busca os dados do documento específico
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
         const response = await fetch(`http://localhost:4000/api/documentos/${documentoId}`);
         if (!response.ok) throw new Error('Falha ao buscar dados do documento.');
         
@@ -48,6 +52,10 @@ function EditDocumentoModal({ documentoId, onClose, onSave }) {
     }
 
     try {
+<<<<<<< HEAD
+=======
+      // Chama a rota PUT
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
       const response = await fetch(`http://localhost:4000/api/documentos/${documentoId}`, {
         method: 'PUT',
         headers: { 

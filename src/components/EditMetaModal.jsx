@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
+<<<<<<< HEAD
 function EditMetaModal({ metaId, onClose, onSave }) {
   const { token } = useAuth(); 
   
+=======
+// Este componente é para editar Metas
+function EditMetaModal({ metaId, onClose, onSave }) {
+  const { token } = useAuth(); // O token é necessário
+  
+  // Estados do formulário (Exemplo para Metas)
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState(0);
@@ -13,6 +21,10 @@ function EditMetaModal({ metaId, onClose, onSave }) {
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
   
+<<<<<<< HEAD
+=======
+  // 1. Buscar os dados da meta quando o modal abre (GET)
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
   useEffect(() => {
     const fetchMeta = async () => {
       setIsLoading(true);
@@ -25,6 +37,10 @@ function EditMetaModal({ metaId, onClose, onSave }) {
       }
 
       try {
+<<<<<<< HEAD
+=======
+        // Corrigido: usando crases e endpoint correto
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
         const response = await fetch(`http://localhost:4000/api/metas/${metaId}`, {
           headers: { 
             'Authorization': `Bearer ${token}` 
@@ -39,6 +55,10 @@ function EditMetaModal({ metaId, onClose, onSave }) {
             const errorJson = JSON.parse(errorText);
             errorMessage = errorJson.message || errorMessage;
           } catch (e) {
+<<<<<<< HEAD
+=======
+            // Se não for JSON, usamos o status.
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
           }
           throw new Error(errorMessage);
         }
@@ -67,6 +87,10 @@ function EditMetaModal({ metaId, onClose, onSave }) {
     setFormError('');
     setFormSuccess('');
     
+<<<<<<< HEAD
+=======
+    // Verifica se o token existe antes de enviar
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
     if (!token) {
       setFormError('Sessão expirada. Por favor, faça login novamente.');
       return;

@@ -26,7 +26,12 @@ function PortalPage() {
     }
     setLoading(true);
     try {
+<<<<<<< HEAD
       const response = await fetch(`${API_URL}/api/auth/login`, {
+=======
+      // 3. Chamar a API de Login no back-end
+      const response = await fetch('http://localhost:4000/api/auth/login', {
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginData.email, senha: loginData.senha })
@@ -52,7 +57,12 @@ function PortalPage() {
     }
     setLoading(true);
     try {
+<<<<<<< HEAD
       const response = await fetch(`${API_URL}/api/auth/register`, {
+=======
+      // 8. Chamar a API de Registro no back-end
+      const response = await fetch('http://localhost:4000/api/auth/register', {
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome: registerData.nome, email: registerData.email, senha: registerData.senha })

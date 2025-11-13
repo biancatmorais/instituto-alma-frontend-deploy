@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
+<<<<<<< HEAD
 function EditAtividadeModal({ atividadeId, onClose, onSave }) {
   const { token } = useAuth(); 
+=======
+// Componente para editar uma atividade específica
+function EditAtividadeModal({ atividadeId, onClose, onSave }) {
+  const { token } = useAuth(); // O token é necessário para o GET e PUT
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
   
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
@@ -15,8 +21,15 @@ function EditAtividadeModal({ atividadeId, onClose, onSave }) {
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
   
+<<<<<<< HEAD
   const [oldImages, setOldImages] = useState({});
 
+=======
+  // Imagens antigas (apenas para mostrar o nome/URL)
+  const [oldImages, setOldImages] = useState({});
+
+  // 1. Buscar os dados da atividade quando o modal abre (GET)
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
   useEffect(() => {
     const fetchAtividade = async () => {
       setIsLoading(true);
@@ -29,6 +42,10 @@ function EditAtividadeModal({ atividadeId, onClose, onSave }) {
       }
 
       try {
+<<<<<<< HEAD
+=======
+        // Correção de sintaxe e URL
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
         const response = await fetch(`http://localhost:4000/api/atividades/${atividadeId}`, {
           headers: { 
             'Authorization': `Bearer ${token}` 
@@ -43,13 +60,23 @@ function EditAtividadeModal({ atividadeId, onClose, onSave }) {
             const errorJson = JSON.parse(errorText);
             errorMessage = errorJson.message || errorMessage;
           } catch (e) {
+<<<<<<< HEAD
           }
+=======
+            // Se não for JSON, usamos o status.
+          }
+          // REMOVIDA A CHAVE EXTRA (linha 52 original)
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
           throw new Error(errorMessage);
         }
         
         const data = await response.json();
         setTitulo(data.titulo);
         setDescricao(data.descricao);
+<<<<<<< HEAD
+=======
+        // Guarda os nomes dos ficheiros antigos (as URLs já vêm do Controller)
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
         setOldImages({
           img1: data.imagem_url_1,
           img2: data.imagem_url_2,
@@ -70,11 +97,19 @@ function EditAtividadeModal({ atividadeId, onClose, onSave }) {
   }, [atividadeId, token]);
 
 
+<<<<<<< HEAD
+=======
+  // 2. Função para enviar a ATUALIZAÇÃO (PUT)
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
   const handleUpdateAtividade = async (e) => {
     e.preventDefault();
     setFormError('');
     setFormSuccess('');
     
+<<<<<<< HEAD
+=======
+    // Verifica se o token existe antes de enviar
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
     if (!token) {
         setFormError('Sessão expirada. Por favor, faça login novamente.');
         return;
@@ -90,9 +125,16 @@ function EditAtividadeModal({ atividadeId, onClose, onSave }) {
     if (imagem4) formData.append('imagem_4', imagem4);
 
     try {
+<<<<<<< HEAD
       const response = await fetch(`http://localhost:4000/api/atividades/${atividadeId}`, {
         method: 'PUT',
         headers: { 'Authorization': `Bearer ${token}` }, 
+=======
+      // Corrigido: USANDO LOCALHOST E CRASES
+      const response = await fetch(`http://localhost:4000/api/atividades/${atividadeId}`, {
+        method: 'PUT',
+        headers: { 'Authorization': `Bearer ${token}` }, // Headers para autenticação
+>>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
         body: formData
       });
 
