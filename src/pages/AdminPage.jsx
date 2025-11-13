@@ -7,7 +7,7 @@ import EditMetaModal from '../components/EditMetaModal.jsx';
 import EditEventoModal from '../components/EditEventoModal.jsx'; 
 
 // Define a URL base da API (lendo do ambiente, ou usando fallback local para desenvolvimento)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_URL = import.meta.env.VITE_API_URL || 'https://instituto-alma-backend-azure-production.up.railway.app';
 
 function AdminPage() {
     // A variável 'token' é usada para autenticar todas as chamadas privadas
