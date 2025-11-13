@@ -3,12 +3,11 @@ import { Link } from 'react-router-dom';
 
 function Footer() {
   return (
-    // AQUI ESTÁ A CORREÇÃO:
-    // Adicionei style={{ marginTop: 0 }} para remover o espaço extra.
+    
     <footer className="main-footer" style={{ marginTop: 0 }}>
       <div className="footer-content">
         
-        {/* Coluna da Esquerda: Logo e Endereço */}
+      
         <div className="footer-column logo-column">
           <Link to="/">
             <img 
@@ -23,7 +22,7 @@ function Footer() {
           </p>
         </div>
 
-        {/* Coluna da Direita: Redes Sociais */}
+
         <div className="footer-column social-column">
           <h4>Acompanhe pelas redes:</h4>
           <div className="social-icons">

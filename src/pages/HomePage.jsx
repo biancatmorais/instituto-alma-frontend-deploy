@@ -2,12 +2,16 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom'; 
 import EventModal from '../components/EventModal'; 
 
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString + 'T00:00:00'); 
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+};
+
 function HomePage() {
 
-  // --- LÓGICA DO CARROSSEL ---
   const [activeSlide, setActiveSlide] = useState(0); 
   
-  // (CORREÇÃO) Adicionando o slidesData de volta para o fallback
   const slidesData = [
     { id: 0, barColor: '#f06678' },
     { id: 1, barColor: '#ffc9fc' },
@@ -15,19 +19,16 @@ function HomePage() {
     { id: 3, barColor: '#6efff1' },
   ];
 
-  // --- LÓGICA DO MODAL (EVENTOS) ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  // --- LÓGICA DO FORMULÁRIO DA OUVIDORIA ---
   const [ouvidoriaNome, setOuvidoriaNome] = useState('');
   const [ouvidoriaEmail, setOuvidoriaEmail] = useState('');
   const [ouvidoriaTelefone, setOuvidoriaTelefone] = useState('');
   const [ouvidoriaMensagem, setOuvidoriaMensagem] = useState('');
   const [formStatus, setFormStatus] = useState(''); 
 
-  // --- ESTADOS PARA OS DADOS DA API ---
   const [eventos, setEventos] = useState([]);
   const [isLoadingEventos, setIsLoadingEventos] = useState(true);
   const [errorEventos, setErrorEventos] = useState(null);
@@ -36,14 +37,21 @@ function HomePage() {
   const [isLoadingAtividades, setIsLoadingAtividades] = useState(true);
   const [errorAtividades, setErrorAtividades] = useState(null);
 
-  // --- Funções de FETCH (com useCallback) ---
   const fetchEventos = useCallback(async () => {
     setIsLoadingEventos(true);
     try {
-      const response = await fetch('https://instituto-alma-backend-production.up.railway.app/api/eventos'); 
+      const response = await fetch('http://localhost:4000/api/eventos'); 
       if (!response.ok) throw new Error('Falha ao buscar eventos do servidor');
       const data = await response.json();
-      setEventos(data); 
+      
+      const hoje = new Date();
+      hoje.setHours(0, 0, 0, 0); 
+
+      const eventosFuturos = data
+        .filter(evento => new Date(evento.data_evento) >= hoje) 
+        .sort((a, b) => new Date(a.data_evento) - new Date(b.data_evento)); 
+        
+      setEventos(eventosFuturos); 
       setErrorEventos(null);
     } catch (err) {
       setErrorEventos(err.message);
@@ -55,10 +63,10 @@ function HomePage() {
   const fetchAtividades = useCallback(async () => {
     setIsLoadingAtividades(true);
     try {
-      const response = await fetch('https://instituto-alma-backend-production.up.railway.app/api/atividades'); 
+      const response = await fetch('http://localhost:4000/api/atividades'); 
       if (!response.ok) throw new Error('Falha ao buscar atividades');
       const data = await response.json();
-      setAtividades(data); // Salva as atividades no estado
+      setAtividades(data); 
       setErrorAtividades(null);
     } catch (err) {
       setErrorAtividades(err.message);
@@ -67,13 +75,81 @@ function HomePage() {
     }
   }, []);
 
-  // --- Efeito para buscar TUDO QUANDO A PÁGINA CARREGA ---
   useEffect(() => {
     fetchEventos();
     fetchAtividades(); 
   }, [fetchEventos, fetchAtividades]);
 
-  // --- Função para renderizar o carrossel ---
+  const renderEventosList = () => {
+    if (isLoadingEventos) {
+      return <div className="evento-info-box">A carregar eventos...</div>;
+    }
+    if (errorEventos) {
+      return <div className="evento-info-box" style={{ color: 'red' }}>{errorEventos}</div>;
+    }
+    
+    const proximoEvento = eventos[0]; 
+    
+    if (!proximoEvento) {
+      return (
+        <div className="evento-info-box">
+          <strong>Nenhum evento futuro agendado.</strong><br />
+          <span style={{fontSize: '0.85em', opacity: 0.7}}>Verifique a seção de notícias para eventos passados.</span>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="evento-info-box">
+        <strong>{formatDate(proximoEvento.data_evento)} - {proximoEvento.titulo}</strong><br />
+        <strong>Local:</strong> {proximoEvento.local}<br />
+        <span style={{fontSize: '0.85em', opacity: 0.9}}>{proximoEvento.descricao}</span>
+      </div>
+    );
+  };
+  
+  const renderCalendarioTable = () => {
+    const diasComEvento = new Set();
+    
+    const CALENDAR_MONTH = 11; 
+    const CALENDAR_YEAR = 2025;
+    
+    eventos.forEach(evento => {
+      const dataEvento = new Date(evento.data_evento + 'T00:00:00'); 
+      if (dataEvento.getMonth() === CALENDAR_MONTH && dataEvento.getFullYear() === CALENDAR_YEAR) {
+        diasComEvento.add(dataEvento.getDate());
+      }
+    });
+
+    const diasDoMes = 31; 
+    
+    const cells = [];
+    
+    for (let dia = 1; dia <= diasDoMes; dia++) {
+      const isEvento = diasComEvento.has(dia);
+      const cellContent = isEvento 
+        ? <td key={dia} className="dia-evento"><span>{dia}</span></td>
+        : <td key={dia}>{dia}</td>;
+      cells.push(cellContent);
+    }
+    
+    const diasDesabilitados = [1, 2, 3, 4];
+    diasDesabilitados.forEach(dia => {
+      cells.push(<td key={`prox-${dia}`} className="dia-desabilitado">{dia}</td>);
+    });
+    
+    const rows = [];
+    for (let i = 0; i < 5; i++) {
+      rows.push(
+        <tr key={i}>
+          {cells.slice(i * 7, (i * 7) + 7)}
+        </tr>
+      );
+    }
+
+    return <tbody>{rows}</tbody>;
+  };
+
   const renderAtividadesCarrossel = () => {
     if (isLoadingAtividades) {
       return <div style={{ textAlign: 'center', padding: '50px', color: 'white' }}>A carregar atividades...</div>;
@@ -82,7 +158,6 @@ function HomePage() {
       return <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}>Erro: {errorAtividades}</div>;
     }
     if (atividades.length === 0) {
-      // Se o banco está vazio, mostre o conteúdo original (Sopa Fraterna) como fallback
       return (
         <div className={`carousel-slide active-slide`}>
           <div className="slide-top-bar" style={{ backgroundColor: '#6efff1' }}></div>
@@ -104,9 +179,8 @@ function HomePage() {
       );
     }
 
-    const imageBaseUrl = 'https://instituto-alma-backend-production.up.railway.app/api/uploads/';
+    const imageBaseUrl = 'http://localhost:4000/uploads/';
 
-    // Mapeia os dados do banco de dados para os slides
     return atividades.map((atividade, index) => (
       <div 
         key={atividade.id}
@@ -115,7 +189,6 @@ function HomePage() {
         <div className="slide-top-bar" style={{ backgroundColor: '#6efff1' }}></div>
         <div className="slide-content-wrapper">
           <div className="image-grid">
-            {/* Mostra as imagens (se existirem) */}
             {atividade.imagem_url_1 && (
               <div className="grid-image-placeholder">
                 <img src={imageBaseUrl + atividade.imagem_url_1} alt={`${atividade.titulo} 1`} />
@@ -140,7 +213,6 @@ function HomePage() {
           <div className="description-panel">
             <h2>{atividade.titulo.toUpperCase()}</h2>
             <div className="description-placeholder">
-              {/* Usa o 'whiteSpace: pre-wrap' para respeitar as quebras de linha do <textarea> */}
               <p style={{ whiteSpace: 'pre-wrap' }}>{atividade.descricao}</p>
             </div>
           </div>
@@ -149,16 +221,14 @@ function HomePage() {
     ));
   };
 
-  // --- Função para renderizar os PONTOS de navegação ---
   const renderCarrosselDots = () => {
     const colors = ['#f06678', '#ffc9fc', '#64B5F6', '#6efff1'];
     
-    // (CORREÇÃO) Se 'atividades' estiver vazio, use o 'slidesData' (o array de fallback)
     const items = atividades.length > 0 ? atividades : slidesData; 
 
     return items.map((item, index) => (
       <div 
-        key={item.id || index} // Usa item.id (do banco) ou index (do fallback)
+        key={item.id || index} 
         className={`nav-dot ${activeSlide === index ? 'active-dot' : ''}`}
         style={{ backgroundColor: colors[index] || colors[0] }}
         onClick={() => setActiveSlide(index)} 
@@ -167,35 +237,6 @@ function HomePage() {
   };
 
 
-  // --- Função para renderizar lista de EVENTOS ---
-  const renderEventosList = () => {
-    if (isLoadingEventos) {
-      return <div className="evento-info-box">A carregar eventos...</div>;
-    }
-    if (errorEventos) {
-      return <div className="evento-info-box" style={{ color: 'red' }}>{errorEventos}</div>;
-    }
-    if (eventos.length === 0) {
-      // Fallback para o evento estático se o banco de dados estiver vazio
-      return (
-        <div className="evento-info-box">
-          <strong>23/12 - Ação de Natal</strong><br />
-          Local: Av. da Liberdade, 532 - Liberdade, São Paulo - SP, 01502-001
-        </div>
-      );
-    }
-    const proximoEvento = eventos[0]; 
-    return (
-      <div className="evento-info-box">
-        <strong>{proximoEvento.titulo}</strong><br />
-        <strong>Data:</strong> {proximoEvento.data_formatada}<br />
-        <strong>Local:</strong> {proximoEvento.local}
-      </div>
-    );
-  };
-
-
-  // --- Função para ENVIAR OUVIDORIA ---
   const handleSubmitOuvidoria = async (event) => {
     event.preventDefault(); 
     setFormStatus('Enviando...'); 
@@ -206,7 +247,7 @@ function HomePage() {
       mensagem: ouvidoriaMensagem
     };
     try {
-      const response = await fetch('https://instituto-alma-backend-production.up.railway.app/api/ouvidoria', {
+      const response = await fetch('http://localhost:4000/api/ouvidoria', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -232,7 +273,6 @@ function HomePage() {
     <> 
       <main> 
         
-        {/* --- SEÇÃO HERO --- */}
         <section className="hero-section" id="home">
           <div className="hero-image-card">
             <div className="image-placeholder">
@@ -244,13 +284,12 @@ function HomePage() {
               <div className="bar" style={{ backgroundColor: '#64B5F6' }}></div>
               <div className="bar" style={{ backgroundColor: '#6efff1' }}></div>
             </div>
-          </div>
+            </div>
           <div className="hero-text">
             <h1>O Instituto Alma é uma luz de esperança nas comunidades mais esquecidas e vulneráveis da sociedade.</h1>
           </div>
         </section>
 
-        {/* --- SEÇÃO SOBRE NÓS --- */}
         <section id="sobre-nos" className="sobre-nos-section">
           <h2 className="section-title" style={{ display: 'none' }}>Sobre Nós</h2>
           <div className="thin-bar"></div>
@@ -261,12 +300,12 @@ function HomePage() {
             <div className="about-text-card">
               <h2>Sobre Nós</h2>
               <p>O instituto Alma surgiu com a proposta de
-                 promover a transformação social através de
-                 ações diferenciadas, feitas como objetivo de
-                 encantar e proporcionar algo único e especial
-                 para a vida das pessoas.</p>
+                promover a transformação social através de
+                ações diferenciadas, feitas como objetivo de
+                encantar e proporcionar algo único e especial
+                para a vida das pessoas.</p>
               <p>O público-alvo são os moradores de comunidades
-                 muito carentes esquecidas.</p>
+                muito carentes esquecidas.</p>
             </div>
             <div className="about-image-card">
               <img src="/documentos/Sopa 16.04.21 040.jpg" alt="Foto2" />
@@ -283,36 +322,30 @@ function HomePage() {
           </div>
         </section>
 
-        {/* --- (NOVO) SEÇÃO ATIVIDADES (DINÂMICA) --- */}
         <section id="atividades" className="atividades-section">
           <h2 className="section-title">Nossas Atividades</h2>
           <div className="carousel-container">
             
-            {/* O conteúdo do carrossel agora é dinâmico */}
             <div className="carousel-track">
               {renderAtividadesCarrossel()}
             </div>
             
-            {/* Os pontos de navegação agora são dinâmicos */}
             <div className="carousel-navigation">
               {renderCarrosselDots()}
             </div>
           </div>
         </section>
 
-        {/* --- SEÇÃO TRANSPARÊNCIA (TEXTOS RESTAURADOS) --- */}
         <section id="transparencia" className="transparencia-section">
           <h2 className="section-title">Portal de Transparência</h2>
           <div className="thin-bar" style={{ backgroundColor: '#6efff1' }}></div>
           <div className="transparencia-wrapper">
             <div className="transparencia-col-left">
               <div className="info-card">
-                {/* === TEXTO COMPLETO RESTAURADO === */}
                 <p>Acreditamos na transparência total. Para que você acompanhe de perto como sua generosidade se transforma em ação, disponibilizamos nossos relatórios de atividades e financeiros.</p>
                 <Link to="/relatorios" className="btn btn-red">Saiba Mais</Link>
               </div>
               <div className="info-card">
-                {/* === TEXTO COMPLETO RESTAURADO === */}
                 <p>O Instituto Alma é feito por pessoas comprometidas com nossa missão. Conheça aqui nossos sócios, fundadores e a diretoria responsável pela gestão e governança da organização.</p>
                 <Link to="/governanca" className="btn btn-red">Saiba Mais</Link>
               </div>
@@ -320,7 +353,6 @@ function HomePage() {
             <div className="transparencia-col-right">
               <div className="info-card">
                 <h3>Sua Confiança é Importante para Nós</h3>
-                {/* === TEXTO COMPLETO RESTAURADO === */}
                 <p>No Instituto Alma, a transparência é o alicerce do nosso trabalho. Acreditamos que prestar contas de forma clara é fundamental para honrar a generosidade de quem nos apoia.</p>
                 <p>Temos um compromisso firme com a gestão responsável de todos os recursos. Cada doação recebida é registrada e direcionada com o máximo cuidado para nossas ações, seja na compra de alimentos para a Sopa Fraterna, na montagem das cestas básicas ou no apoio às mães.</p>
                 <p>Seu apoio nos permite levar dignidade e esperança, e é por isso que fazemos questão de sermos transparentes sobre como sua contribuição se transforma em ajuda real.</p>
@@ -338,7 +370,6 @@ function HomePage() {
           </div>
         </section>
 
-        {/* --- SEÇÃO EVENTOS (DINÂMICA) --- */}
         <section id="eventos" className="eventos-section">
           <h2 className="section-title">Se Agende Para Participar Dos Nossos Eventos</h2>
           <div className="thin-bar" style={{ backgroundColor: '#6efff1' }}></div>
@@ -357,20 +388,13 @@ function HomePage() {
                     <th>Domingo</th>
                   </tr>
                 </thead>
-                <tbody>
-                  <tr><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td></tr>
-                  <tr><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td></tr>
-                  <tr><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td></tr>
-                  <tr><td>22</td><td className="dia-evento"><span>23</span></td><td>24</td><td>25</td><td>26</td><td>27</td><td>28</td></tr>
-                  <tr><td>29</td><td>30</td><td>31</td><td className="dia-desabilitado">1</td><td className="dia-desabilitado">2</td><td className="dia-desabilitado">3</td><td className="dia-desabilitado">4</td></tr>
-                </tbody>
+                {renderCalendarioTable()} 
               </table>
             </div>
             <div className="eventos-sidebar">
               
               <div className="sidebar-widget">
                 <h4>Eventos em Breve:</h4>
-                {/* A lista de eventos é dinâmica */}
                 {renderEventosList()}
               </div>
               
@@ -400,7 +424,6 @@ function HomePage() {
           </div>
         </section>
 
-        {/* --- SEÇÃO OUVIDORIA (CONECTADA) --- */}
         <section id="ouvidoria" className="ouvidoria-section">
           <h2 className="section-title">Ouvidoria</h2>
           <div className="thin-bar" style={{ backgroundColor: '#6efff1' }}></div>
@@ -480,7 +503,6 @@ function HomePage() {
 
       </main>
       
-      {/* O Modal de Eventos */}
       {isModalOpen && <EventModal onClose={closeModal} />}
 
     </>

@@ -1,23 +1,17 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; // 1. IMPORTE O HOOK DE AUTENTICAÇÃO
+import { useAuth } from '../context/AuthContext'; 
 
 function DashboardPage() {
-  const { user } = useAuth(); // 2. PEGUE O USUÁRIO (QUE TEM O 'nome' E O 'role')
+  const { user } = useAuth(); 
 
   return (
-    // O DashboardHeader é adicionado automaticamente pelo App.js
-    
     <main className="dashboard-page-wrapper">
 
       <div className="dashboard-header" style={{ alignItems: 'center' }}>
         
-        {/* 3. MENSAGEM DE BOAS-VINDAS DINÂMICA */}
-        {/* Mostra "Olá, [Nome]" ou "Minha Conta" se o usuário for nulo */}
         <h1>{user ? `Olá, ${user.nome}!` : 'Minha Conta'}</h1>
 
-        {/* 4. LÓGICA CONDICIONAL DE PAPEL (ROLE) */}
-        {/* Mostre "Sou Voluntário" SE o papel for 'voluntario' OU 'admin' */}
         {user && (user.role === 'voluntario' || user.role === 'admin') && (
           <Link to="/voluntario" className="btn btn-primary">Sou Voluntário</Link>
         )}
@@ -25,11 +19,8 @@ function DashboardPage() {
 
       <div className="dashboard-container">
         
-        {/* O H1 foi movido para o .dashboard-header acima */}
-
         <div className="dashboard-col-left">
           <div className="dashboard-card ola-doador">
-            {/* 5. TÍTULO DINÂMICO NO CARD */}
             <h2>Seja bem-vindo, {user ? user.role : 'Doador'}!</h2>
             <p>Aqui você pode acompanhar seu histórico de doações e gerenciar seus dados. Obrigado por fazer parte da mudança!</p>
             <Link to="/doar" className="btn btn-red" style={{ width: '100%' }}>Fazer Nova Doação</Link>
@@ -38,7 +29,6 @@ function DashboardPage() {
           <div className="dashboard-card">
             <h2>Histórico de Contribuições</h2>
             <table className="history-table">
-              {/* ... (conteúdo da tabela) ... */}
               <tbody>
                 <tr>
                   <td>25/10/2025</td>
@@ -53,7 +43,6 @@ function DashboardPage() {
           <div className="dashboard-card">
             <h2>Ações Concluídas</h2>
             <table className="history-table">
-              {/* ... (conteúdo da tabela) ... */}
               <tbody>
                 <tr>
                   <td>Sopa Fraterna (Outubro)</td>
@@ -71,7 +60,6 @@ function DashboardPage() {
             <form action="/atualizar-dados" method="POST">
               <div className="form-group">
                 <label htmlFor="dash-nome" className="form-label">Nome Completo</label>
-                {/* 6. DADOS DO USUÁRIO VINDOS DO CONTEXTO */}
                 <input type="text" id="dash-nome" name="nome" className="form-input" defaultValue={user ? user.nome : 'Carregando...'} />
               </div>
               <div className="form-group">

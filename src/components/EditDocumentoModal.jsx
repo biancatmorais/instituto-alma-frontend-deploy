@@ -1,38 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-// Este modal recebe:
-// - documentoId: O ID do documento a ser editado
-// - onClose: A função para fechar o modal
-// - onSave: A função para atualizar a lista na AdminPage
 function EditDocumentoModal({ documentoId, onClose, onSave }) {
   const { token } = useAuth();
   
-  // Estados do formulário
   const [titulo, setTitulo] = useState('');
-  const [arquivo, setArquivo] = useState(null); // Para o NOVO ficheiro PDF
+  const [arquivo, setArquivo] = useState(null);
 
-  // Estados de feedback
   const [isLoading, setIsLoading] = useState(true);
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
   
-  // Nome do ficheiro antigo (apenas para mostrar)
   const [oldFilename, setOldFilename] = useState('');
 
-  // 1. Buscar os dados do documento quando o modal abre
   useEffect(() => {
     const fetchDocumento = async () => {
       setIsLoading(true);
       try {
-        // Busca os dados do documento específico
-        const response = await fetch(`https://instituto-alma-backend-production.up.railway.app/api/documentos/${documentoId}`);
+        const response = await fetch(`http://localhost:4000/api/documentos/${documentoId}`);
         if (!response.ok) throw new Error('Falha ao buscar dados do documento.');
         
         const data = await response.json();
-        // Preenche o formulário com os dados do banco
         setTitulo(data.titulo);
-        setOldFilename(data.arquivo_url); // Guarda o nome do ficheiro antigo
+        setOldFilename(data.arquivo_url);
         
       } catch (err) {
         setFormError(err.message);
@@ -42,30 +32,25 @@ function EditDocumentoModal({ documentoId, onClose, onSave }) {
     };
 
     fetchDocumento();
-  }, [documentoId]); // Roda sempre que o ID do documento mudar
+  }, [documentoId]);
 
 
-  // 2. Função para enviar a ATUALIZAÇÃO (PUT)
   const handleUpdateDocumento = async (e) => {
     e.preventDefault();
     setFormError('');
     setFormSuccess('');
 
-    // FormData é necessário para enviar ficheiros
     const formData = new FormData();
     formData.append('titulo', titulo);
     
-    // Anexa o NOVO ficheiro PDF (se o utilizador selecionou um)
     if (arquivo) {
       formData.append('arquivo', arquivo);
     }
 
     try {
-      // Chama a rota PUT
-      const response = await fetch(`https://instituto-alma-backend-production.up.railway.app/api/documentos/${documentoId}`, {
+      const response = await fetch(`http://localhost:4000/api/documentos/${documentoId}`, {
         method: 'PUT',
         headers: { 
-          // NÃO defina 'Content-Type', o FormData faz isso
           'Authorization': `Bearer ${token}` 
         },
         body: formData
@@ -74,11 +59,10 @@ function EditDocumentoModal({ documentoId, onClose, onSave }) {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Erro ao atualizar documento');
 
-      setFormSuccess(data.message); // "Documento atualizado com sucesso."
+      setFormSuccess(data.message); 
       
-      onSave(); // Atualiza a tabela na AdminPage
+      onSave(); 
       
-      // Fecha o modal após 2 segundos
       setTimeout(() => {
         onClose();
       }, 2000);
@@ -115,7 +99,7 @@ function EditDocumentoModal({ documentoId, onClose, onSave }) {
                 type="file" 
                 id="edit-doc-arquivo" 
                 className="form-input" 
-                accept=".pdf" // Aceita apenas PDFs
+                accept=".pdf" 
                 onChange={(e) => setArquivo(e.target.files[0])} 
               />
             </div>

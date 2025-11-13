@@ -1,60 +1,58 @@
 import React, { useState } from 'react';
 
-// 'onClose' é uma função que receberemos da HomePage
 function EventModal({ onClose }) {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [isEnviado, setIsEnviado] = useState(false);
-  
-  // (NOVO) Estado para mensagens de erro/sucesso da API
   const [formMessage, setFormMessage] = useState('');
 
-  // --- (ATUALIZADO) AGORA CHAMA A API REAL ---
   const handleSubmit = async (e) => {
     e.preventDefault(); 
-    setFormMessage(''); // Limpa mensagens antigas
+    setFormMessage('');
 
     try {
-      // 1. Chamar a nossa nova API de inscrições
-      const response = await fetch('https://instituto-alma-backend-production.up.railway.app/api/', {
+      const response = await fetch('http://localhost:4000/api/inscricoes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ nome, email }),
       });
-
-      const data = await response.json();
+      
+      let data = {};
+      try {
+          data = await response.json();
+      } catch (jsonError) {
+          data.message = 'Inscrição realizada com sucesso! Avisaremos sobre novos eventos.';
+      }
 
       if (!response.ok) {
-        // Se a API der um erro (ex: 400, 409, 500)
         throw new Error(data.message || 'Erro ao enviar inscrição.');
       }
 
-      // 2. SUCESSO!
       setIsEnviado(true);
-      setFormMessage(data.message); // "Inscrição realizada com sucesso!"
+      setFormMessage(data.message); 
 
-      // Fecha o modal após 3 segundos
+      setNome('');
+      setEmail('');
+
       setTimeout(() => {
         onClose();
       }, 3000);
 
     } catch (error) {
       console.error('Erro no formulário do modal:', error);
-      // Mostra o erro (ex: "Este email já está cadastrado")
       setFormMessage(error.message);
-      setIsEnviado(true); // Mostra a mensagem de erro no lugar do sucesso
+      setIsEnviado(true); 
     }
   };
-
+  
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         
         <button className="modal-close-btn" onClick={onClose}>&times;</button>
         
-        {/* Se NÃO foi enviado, mostre o formulário */}
         {!isEnviado ? (
           <>
             <h2>Seja Notificado!</h2>
@@ -89,9 +87,7 @@ function EventModal({ onClose }) {
             </form>
           </>
         ) : (
-          // Se FOI enviado, mostre a mensagem de sucesso ou erro
           <div className="modal-success">
-            {/* O título muda dependendo se deu erro ou não */}
             <h2 style={{ color: formMessage.startsWith('Erro:') ? '#C6421E' : '#81C784' }}>
               {formMessage.startsWith('Erro:') ? 'Erro!' : 'Obrigado!'}
             </h2>

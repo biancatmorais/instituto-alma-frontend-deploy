@@ -1,14 +1,9 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-// Importe os Headers
-import Header from './components/Header';
-import DashboardHeader from './components/DashboardHeader.jsx'; 
-import Footer from './components/Footer.jsx'; 
-// 1. IMPORTE O NOSSO NOVO "SEGURANÇA"
-import ProtectedRoute from './components/ProtectedRoute.jsx';
+import PublicLayout from './components/PublicLayout.jsx'; 
+import ProtectedLayout from './components/ProtectedLayout.jsx'; 
 
-// Importe suas páginas
 import HomePage from './pages/HomePage';
 import PortalPage from './pages/PortalPage';
 import DoarPage from './pages/DoarPage';
@@ -20,45 +15,35 @@ import VoluntarioPage from './pages/VoluntarioPage';
 
 function App() {
   return (
-    <div>
-      <Routes>
-        {/* --- ROTAS PÚBLICAS --- */}
-        {/* (Qualquer um pode ver) */}
-        <Route path="/" element={<><Header /><HomePage /></>} />
-        <Route path="/portal" element={<><Header /><PortalPage /></>} />
-        <Route path="/doar" element={<><Header /><DoarPage /></>} />
-        <Route path="/relatorios" element={<><Header /><RelatoriosPage /></>} />
-        <Route path="/governanca" element={<><Header /><GovernancaPage /></>} />
-
-        {/* --- ROTAS PRIVADAS (PROTEGIDAS) --- */}
-        
-        {/* ROTA DASHBOARD (Qualquer usuário logado pode ver) */}
-        <Route path="/dashboard" element={
-          <ProtectedRoute allowedRoles={['doador', 'voluntario', 'admin']}>
-            <DashboardHeader />
-            <DashboardPage />
-          </ProtectedRoute>
-        } />
-
-        {/* ROTA VOLUNTÁRIO (Apenas 'voluntario' e 'admin' podem ver) */}
-        <Route path="/voluntario" element={
-          <ProtectedRoute allowedRoles={['voluntario', 'admin']}>
-            <DashboardHeader />
-            <VoluntarioPage />
-          </ProtectedRoute>
-        } />
-
-        {/* ROTA ADMIN (Apenas 'admin' pode ver) */}
-        <Route path="/admin" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <DashboardHeader />
-            <AdminPage />
-          </ProtectedRoute>
-        } />
-      </Routes>
+    <Routes>
       
-      <Footer />
-    </div>
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/portal" element={<PortalPage />} />
+        <Route path="/doar" element={<DoarPage />} />
+        <Route path="/relatorios" element={<RelatoriosPage />} />
+        <Route path="/governanca" element={<GovernancaPage />} />
+      </Route>
+
+      <Route path="/dashboard" element={
+        <ProtectedLayout allowedRoles={['doador', 'voluntario', 'admin']}>
+          <DashboardPage />
+        </ProtectedLayout>
+      } />
+
+      <Route path="/voluntario" element={
+        <ProtectedLayout allowedRoles={['voluntario', 'admin']}>
+          <VoluntarioPage />
+        </ProtectedLayout>
+      } />
+
+      <Route path="/admin" element={
+        <ProtectedLayout allowedRoles={['admin']}>
+          <AdminPage />
+        </ProtectedLayout>
+      } />
+      
+    </Routes>
   );
 }
 

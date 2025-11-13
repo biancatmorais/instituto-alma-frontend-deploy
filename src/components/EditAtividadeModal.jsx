@@ -1,14 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-// Este modal recebe:
-// - atividadeId: O ID da atividade a ser editada
-// - onClose: A função para fechar o modal
-// - onSave: A função para atualizar a lista na AdminPage
 function EditAtividadeModal({ atividadeId, onClose, onSave }) {
-  const { token } = useAuth();
+  const { token } = useAuth(); 
   
-  // Estados do formulário
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [imagem1, setImagem1] = useState(null);
@@ -16,27 +11,45 @@ function EditAtividadeModal({ atividadeId, onClose, onSave }) {
   const [imagem3, setImagem3] = useState(null);
   const [imagem4, setImagem4] = useState(null);
 
-  // Estados de feedback
   const [isLoading, setIsLoading] = useState(true);
   const [formError, setFormError] = useState('');
   const [formSuccess, setFormSuccess] = useState('');
   
-  // Imagens antigas (apenas para mostrar o nome)
   const [oldImages, setOldImages] = useState({});
 
-  // 1. Buscar os dados da atividade quando o modal abre
   useEffect(() => {
     const fetchAtividade = async () => {
       setIsLoading(true);
+      setFormError(''); 
+      
+      if (!token) {
+        setFormError('Erro de autenticação: Token não disponível.');
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        const response = await fetch(`https://instituto-alma-backend-production.up.railway.app/api/${atividadeId}`);
-        if (!response.ok) throw new Error('Falha ao buscar dados da atividade.');
+        const response = await fetch(`http://localhost:4000/api/atividades/${atividadeId}`, {
+          headers: { 
+            'Authorization': `Bearer ${token}` 
+          }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text(); 
+          let errorMessage = `Falha ao buscar dados. Status: ${response.status}.`;
+          
+          try {
+            const errorJson = JSON.parse(errorText);
+            errorMessage = errorJson.message || errorMessage;
+          } catch (e) {
+          }
+          throw new Error(errorMessage);
+        }
         
         const data = await response.json();
-        // Preenche o formulário com os dados do banco
         setTitulo(data.titulo);
         setDescricao(data.descricao);
-        // Guarda os nomes dos ficheiros antigos
         setOldImages({
           img1: data.imagem_url_1,
           img2: data.imagem_url_2,
@@ -45,50 +58,50 @@ function EditAtividadeModal({ atividadeId, onClose, onSave }) {
         });
         
       } catch (err) {
-        setFormError(err.message);
+        setFormError(err.message); 
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchAtividade();
-  }, [atividadeId]);
+    if(atividadeId && token) { 
+      fetchAtividade();
+    }
+  }, [atividadeId, token]);
 
 
-  // 2. Função para enviar a ATUALIZAÇÃO
   const handleUpdateAtividade = async (e) => {
     e.preventDefault();
     setFormError('');
     setFormSuccess('');
+    
+    if (!token) {
+        setFormError('Sessão expirada. Por favor, faça login novamente.');
+        return;
+    }
 
     const formData = new FormData();
     formData.append('titulo', titulo);
     formData.append('descricao', descricao);
     
-    // Anexa os ficheiros NOVOS (se o user selecionou algum)
     if (imagem1) formData.append('imagem_1', imagem1);
     if (imagem2) formData.append('imagem_2', imagem2);
     if (imagem3) formData.append('imagem_3', imagem3);
     if (imagem4) formData.append('imagem_4', imagem4);
 
     try {
-      // Chama a rota PUT
-      const response = await fetch(`https://instituto-alma-backend-production.up.railway.app/api/${atividadeId}`, {
+      const response = await fetch(`http://localhost:4000/api/atividades/${atividadeId}`, {
         method: 'PUT',
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { 'Authorization': `Bearer ${token}` }, 
         body: formData
       });
 
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Erro ao atualizar atividade');
 
-      setFormSuccess(data.message); // "Atividade atualizada com sucesso."
-      
-      // Chama a função 'onSave' (que veio da AdminPage)
-      // para atualizar a tabela "Atividades Atuais"
+      setFormSuccess(data.message); 
       onSave(); 
       
-      // Fecha o modal após 2 segundos
       setTimeout(() => {
         onClose();
       }, 2000);
