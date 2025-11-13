@@ -297,7 +297,26 @@ function HomePage() {
             {/* O componente EventModal é renderizado sobre o conteúdo principal se isModalOpen for true */}
             {isModalOpen && <EventModal onClose={closeModal} />}
 
-            {/* --- NOVO: CABEÇALHO/NAVEGAÇÃO (REMOVIDO CÓDIGO DUPLICADO) --- */}
+            {/* --- NOVO: CABEÇALHO/NAVEGAÇÃO (CORRIGIDO PARA NÃO SER DUPLICADO) --- */}
+            {/* ESTA É A VERSÃO QUE DEVE VIR DO SEU COMPONENTE DE LAYOUT/NAVBAR */}
+            <header className="main-header">
+                <nav className="main-nav">
+                    <div className="logo">Alma</div>
+                    <ul className="nav-links">
+                        <li><Link to="/#sobre-nos">Sobre Nós</Link></li>
+                        <li><Link to="/#atividades">Nossas Atividades</Link></li>
+                        <li><Link to="/#transparencia">Transparência</Link></li>
+                        <li><Link to="/#eventos">Eventos</Link></li>
+                        <li><Link to="/#ouvidoria">Ouvidoria</Link></li>
+                    </ul>
+                    <div className="nav-actions">
+                        {/* Botão Seja um Doador */}
+                        <Link to="/doar" className="btn btn-secondary">Seja um Doador</Link>
+                        {/* CORRIGIDO: Botão Portal do Doador */}
+                        <Link to="/portal" className="btn btn-primary portal-btn">Portal do Doador</Link>
+                    </div>
+                </nav>
+            </header>
             
             <main>
 
