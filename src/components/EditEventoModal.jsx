@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/TempAuthContext';
+import { useAuth } from '../context/AuthContext';
 
 function EditEventoModal({ eventoId, onClose, onSave }) {
   const { token } = useAuth();

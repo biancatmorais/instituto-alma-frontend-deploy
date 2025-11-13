@@ -1,9 +1,42 @@
-# Dependências
+Dependências
+
 /node_modules
+/.pnp
+.pnp.js
 
-# Arquivos de ambiente
-.env
+Build artifacts
 
-# Pasta de build de produção
 /dist
 /build
+/out
+/package-lock.json # Inclui o lock file, mas o Yarn lock deve ser mantido
+/yarn.lock
+
+Log files
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.log
+
+Diretórios temporários
+
+.temp
+.tmp
+
+Variáveis de ambiente (Segredos)
+
+.env
+.env.*
+!.env.production # Exemplo: Se quiser manter o .env.production no Git (raramente recomendado)
+
+Editor directories and files
+
+.idea
+.vscode
+*.sublime-project
+*.sublime-workspace
+
+Next/Vercel specific
+
+.vercel

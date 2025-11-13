@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/TempAuthContext'; 
+import { useAuth } from '../context/AuthContext'; 
 
 function DashboardPage() {
   const { user } = useAuth(); 
