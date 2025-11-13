@@ -16,10 +16,9 @@ function Header() {
     <header className="main-header">
       <div className="logo">
         
-        {/* 2. 'href="/"' virou 'to="/"' usando <Link> */}
+        
         <Link to="/">
-          {/* 3. Caminho da imagem ajustado para a pasta /public */}
-          {/* e a tag foi fechada com '/>' */}
+          
           <img 
             src="/documentos/LOGO_V.8_ALMA.png" 
             alt="Logo Instituto Alma - Instituto de Desenvolvimento Social" 
@@ -29,8 +28,7 @@ function Header() {
       
       <nav className="main-nav">
         <ul>
-          {/* 4. Todos os links de âncora viraram <HashLink> */}
-          {/* Eles apontam para /#id_da_secao e usam a função de rolagem */}
+          
           <li><HashLink to="/#sobre-nos" scroll={scrollWithOffset}>Sobre Nós</HashLink></li>
           <li><HashLink to="/#atividades" scroll={scrollWithOffset}>Nossas Atividades</HashLink></li>
           <li><HashLink to="/#transparencia" scroll={scrollWithOffset}>Transparência</HashLink></li>
@@ -40,7 +38,7 @@ function Header() {
       </nav>
       
       <div className="nav-buttons">
-        {/* 5. Links para outras páginas usam <Link> e 'to="caminho"' */}
+        
         <Link to="/doar" className="btn btn-secondary">Seja um Doador</Link>
         <Link to="/portal" className="btn btn-primary">Portal do Doador</Link>
       </div>

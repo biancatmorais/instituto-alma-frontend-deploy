@@ -2,8 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import EventModal from '../components/EventModal';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+// ✅ URL dinâmica — pega do .env no Vercel ou usa localhost no ambiente local
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://instituto-alma-backend-azure-production.up.railway.app';
 
+// Função utilitária para formatar datas (dd/mm)
 const formatDate = (dateString) => {
   if (!dateString) return '';
   const date = new Date(dateString + 'T00:00:00');
@@ -12,18 +14,7 @@ const formatDate = (dateString) => {
 
 function HomePage() {
   const [activeSlide, setActiveSlide] = useState(0);
-
-  const slidesData = [
-    { id: 0, barColor: '#f06678' },
-    { id: 1, barColor: '#ffc9fc' },
-    { id: 2, barColor: '#64B5F6' },
-    { id: 3, barColor: '#6efff1' },
-  ];
-
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-
   const [ouvidoriaNome, setOuvidoriaNome] = useState('');
   const [ouvidoriaEmail, setOuvidoriaEmail] = useState('');
   const [ouvidoriaTelefone, setOuvidoriaTelefone] = useState('');
@@ -38,6 +29,10 @@ function HomePage() {
   const [isLoadingAtividades, setIsLoadingAtividades] = useState(true);
   const [errorAtividades, setErrorAtividades] = useState(null);
 
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  // 🔹 Buscar eventos
   const fetchEventos = useCallback(async () => {
     setIsLoadingEventos(true);
     try {
@@ -61,6 +56,7 @@ function HomePage() {
     }
   }, []);
 
+  // 🔹 Buscar atividades
   const fetchAtividades = useCallback(async () => {
     setIsLoadingAtividades(true);
     try {
@@ -81,16 +77,17 @@ function HomePage() {
     fetchAtividades();
   }, [fetchEventos, fetchAtividades]);
 
+  // 🔹 Renderizar carrossel de atividades
   const renderAtividadesCarrossel = () => {
     if (isLoadingAtividades) {
-      return <div style={{ textAlign: 'center', padding: '50px', color: 'white' }}>A carregar atividades...</div>;
+      return <div style={{ textAlign: 'center', padding: '50px', color: 'white' }}>Carregando atividades...</div>;
     }
     if (errorAtividades) {
       return <div style={{ textAlign: 'center', padding: '50px', color: 'red' }}>Erro: {errorAtividades}</div>;
     }
     if (atividades.length === 0) {
       return (
-        <div className={`carousel-slide active-slide`}>
+        <div className="carousel-slide active-slide">
           <div className="slide-top-bar" style={{ backgroundColor: '#6efff1' }}></div>
           <div className="slide-content-wrapper">
             <div className="image-grid">
@@ -133,10 +130,16 @@ function HomePage() {
     ));
   };
 
+  // 🔹 Enviar formulário da ouvidoria
   const handleSubmitOuvidoria = async (event) => {
     event.preventDefault();
     setFormStatus('Enviando...');
-    const formData = { nome: ouvidoriaNome, email: ouvidoriaEmail, telefone: ouvidoriaTelefone, mensagem: ouvidoriaMensagem };
+    const formData = {
+      nome: ouvidoriaNome,
+      email: ouvidoriaEmail,
+      telefone: ouvidoriaTelefone,
+      mensagem: ouvidoriaMensagem,
+    };
     try {
       const response = await fetch(`${API_BASE_URL}/api/ouvidoria`, {
         method: 'POST',

@@ -3,23 +3,21 @@ import { useNavigate } from 'react-router-dom';
 
 function PortalPage() {
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL; // ✅ agora vem do .env
 
-  // Estados gerais
-  const [activeTab, setActiveTab] = useState('login'); // login, registro, reset
+  const [activeTab, setActiveTab] = useState('login');
   const [loading, setLoading] = useState(false);
 
-  // Estados de formulários
   const [loginData, setLoginData] = useState({ email: '', senha: '', error: '', success: '' });
   const [registerData, setRegisterData] = useState({ nome: '', email: '', senha: '', error: '', success: '' });
   const [resetData, setResetData] = useState({ email: '', error: '', success: '' });
 
-  // Funções genéricas de input
   const handleChange = (setter) => (e) => {
     const { name, value } = e.target;
     setter(prev => ({ ...prev, [name]: value, error: '', success: '' }));
   };
 
-  // Login
+  // --- LOGIN ---
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!loginData.email || !loginData.senha) {
@@ -28,7 +26,7 @@ function PortalPage() {
     }
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/login', {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginData.email, senha: loginData.senha })
@@ -37,7 +35,7 @@ function PortalPage() {
       if (!response.ok) throw new Error(data.message || 'Erro ao fazer login.');
       localStorage.setItem('token', data.token);
       setLoginData({ email: '', senha: '', error: '', success: 'Login realizado com sucesso!' });
-      navigate('/dashboard'); // ou rota desejada após login
+      navigate('/dashboard');
     } catch (err) {
       setLoginData(prev => ({ ...prev, error: err.message }));
     } finally {
@@ -45,7 +43,7 @@ function PortalPage() {
     }
   };
 
-  // Registro
+  // --- REGISTRO ---
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!registerData.nome || !registerData.email || !registerData.senha) {
@@ -54,7 +52,7 @@ function PortalPage() {
     }
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/register', {
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome: registerData.nome, email: registerData.email, senha: registerData.senha })
@@ -70,7 +68,7 @@ function PortalPage() {
     }
   };
 
-  // Reset senha
+  // --- RESET SENHA ---
   const handleReset = async (e) => {
     e.preventDefault();
     if (!resetData.email) {
@@ -79,7 +77,7 @@ function PortalPage() {
     }
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:4000/api/reset-password', {
+      const response = await fetch(`${API_URL}/api/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: resetData.email })
