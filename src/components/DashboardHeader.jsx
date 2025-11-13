@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { HashLink } from 'react-router-hash-link';
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/TempAuthContext'; 
 
 const logoAlma = '/documentos/LOGO_V.8_ALMA.png'; 
 

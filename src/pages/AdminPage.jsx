@@ -3,7 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 =======
 >>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
-import { useAuth } from '../context/AuthContext'; 
+import { useAuth } from '../context/TempAuthContext.jsx'; 
 import EditAtividadeModal from '../components/EditAtividadeModal.jsx'; 
 import EditDocumentoModal from '../components/EditDocumentoModal.jsx'; 
 import EditMetaModal from '../components/EditMetaModal.jsx'; 
