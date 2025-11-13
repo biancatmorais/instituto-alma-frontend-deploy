@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext.jsx'; // Nota: Manter a extensão .jsx
 
 // Define a URL base da API (lendo do ambiente, ou usando fallback local)
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://instituto-alma-backend-azure-production.up.railway.app';
 
 function EditAtividadeModal({ atividadeId, onClose, onSave }) {
     const { token } = useAuth();
