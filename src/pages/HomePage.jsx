@@ -40,16 +40,20 @@ function HomePage() {
   const [isLoadingAtividades, setIsLoadingAtividades] = useState(true);
   const [errorAtividades, setErrorAtividades] = useState(null);
 
-  const fetchEventos = useCallback(async () => {
-    setIsLoadingEventos(true);
-    try {
-      const response = await fetch('http://localhost:4000/api/eventos');
-      if (!response.ok) throw new Error('Falha ao buscar eventos do servidor');
-      const data = await response.json();
+const fetchEventos = useCallback(async () => {
+  setIsLoadingEventos(true);
+  try {
+    // 1️⃣ URL via variável de ambiente
+    const API_URL = process.env.REACT_APP_API_URL; 
+    const response = await fetch(`${API_URL}/api/eventos`);
 
-      const hoje = new Date();
-      hoje.setHours(0, 0, 0, 0);
+    if (!response.ok) throw new Error('Falha ao buscar eventos do servidor');
 
+    const data = await response.json();
+
+    // 2️⃣ Ajuste da data de hoje (zera hora, minuto, segundo e ms)
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
       const eventosFuturos = data
         .filter(evento => new Date(evento.data_evento) >= hoje)
         .sort((a, b) => new Date(a.data_evento) - new Date(b.data_evento));
