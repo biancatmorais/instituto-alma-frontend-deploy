@@ -9,8 +9,9 @@ function PortalPage() {
     const navigate = useNavigate();
     const { login } = useAuth(); 
 
-    // --- ESTADOS (Inicialmente configurado para login, mas expandido) ---
-    const [activeTab, setActiveTab] = useState('login'); // Controla a aba visível
+    // --- ESTADOS ---
+    // Mantemos activeTab para permitir a aba de Reset (Recuperar Senha)
+    const [activeTab, setActiveTab] = useState('columns'); // NOVO estado: 'columns' ou 'reset'
     const [loading, setLoading] = useState(false);
 
     // Estados para o formulário de Login
@@ -34,7 +35,6 @@ function PortalPage() {
         setLoading(true);
 
         try {
-            // CORRIGIDO: Usa a variável de ambiente API_URL
             const response = await fetch(`${API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -65,7 +65,6 @@ function PortalPage() {
         setLoading(true);
 
         try {
-            // CORRIGIDO: Usa a variável de ambiente API_URL
             const response = await fetch(`${API_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -79,7 +78,7 @@ function PortalPage() {
                 setRegNome('');
                 setRegEmail('');
                 setRegSenha('');
-                setActiveTab('login'); // Redireciona para o login
+                setActiveTab('columns'); // Mantém na visualização de colunas
             } else {
                 setRegisterMessage(data.message || 'Erro ao criar conta.');
             }
@@ -91,7 +90,7 @@ function PortalPage() {
         }
     };
 
-    // --- RESET SENHA (Adicionado para cobrir o design completo) ---
+    // --- RESET SENHA ---
     const handleReset = async (e) => {
         e.preventDefault();
         setResetData(prev => ({ ...prev, error: '', success: '' }));
@@ -127,6 +126,7 @@ function PortalPage() {
         <main 
             className="portal-page-wrapper" 
             style={{ 
+                // A imagem de fundo deve ser carregada via CSS ou pelo path absoluto se estiver no 'public'
                 backgroundImage: "linear-gradient(rgba(17, 31, 68, 0.8), rgba(17, 31, 68, 0.8)), url('/documentos/paginadoar.JPG')"
             }}
         >
@@ -136,108 +136,108 @@ function PortalPage() {
                 <div className="thin-bar" style={{ backgroundColor: '#6efff1' }}></div>
             </div>
 
-            {/* AQUI ESTÁ A CORREÇÃO PRINCIPAL: Estrutura de ABAS que você queria */}
             <div className="portal-container-tabs">
                 
+                {/* BOTÕES DE NAVEGAÇÃO DE TOPO - Apenas para Recuperação de Senha */}
                 <div className="portal-tabs">
-                    <button onClick={() => setActiveTab('login')} className={activeTab === 'login' ? 'active-tab' : ''}>Login</button>
-                    <button onClick={() => setActiveTab('registro')} className={activeTab === 'registro' ? 'active-tab' : ''}>Registrar</button>
+                    <button onClick={() => setActiveTab('columns')} className={activeTab === 'columns' ? 'active-tab' : ''}>Login/Cadastro</button>
                     <button onClick={() => setActiveTab('reset')} className={activeTab === 'reset' ? 'active-tab' : ''}>Recuperar Senha</button>
                 </div>
 
                 <div className="portal-content">
-                    {/* --- ABA DE LOGIN --- */}
-                    {activeTab === 'login' && (
-                        <div className="tab-pane login-col">
-                            <h2>Acesso Rápido</h2>
-                            <form onSubmit={handleLogin} className="portal-form">
-                                <div className="form-group">
-                                    <label htmlFor="login-email" className="form-label">Email</label>
-                                    <input 
-                                        type="email" 
-                                        id="login-email" 
-                                        className="form-input" 
-                                        value={loginEmail}
-                                        onChange={(e) => setLoginEmail(e.target.value)}
-                                        required 
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="login-senha" className="form-label">Senha</label>
-                                    <input 
-                                        type="password" 
-                                        id="login-senha" 
-                                        className="form-input" 
-                                        value={loginSenha}
-                                        onChange={(e) => setLoginSenha(e.target.value)}
-                                        required 
-                                    />
-                                </div>
-                                
-                                {loginError && (
-                                    <p className="error-message">{loginError}</p>
-                                )}
+                    
+                    {/* --- VISUALIZAÇÃO DE DUAS COLUNAS (LOGIN E INSCRIÇÃO) --- */}
+                    {activeTab === 'columns' && (
+                        <div className="portal-two-columns">
+                            
+                            {/* --- COLUNA DE LOGIN --- */}
+                            <div className="portal-card login-col">
+                                <h2>Login</h2>
+                                <form onSubmit={handleLogin} className="portal-form">
+                                    <div className="form-group">
+                                        <label htmlFor="login-email" className="form-label">Email</label>
+                                        <input 
+                                            type="email" 
+                                            id="login-email" 
+                                            className="form-input" 
+                                            value={loginEmail}
+                                            onChange={(e) => setLoginEmail(e.target.value)}
+                                            required 
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="login-senha" className="form-label">Senha</label>
+                                        <input 
+                                            type="password" 
+                                            id="login-senha" 
+                                            className="form-input" 
+                                            value={loginSenha}
+                                            onChange={(e) => setLoginSenha(e.target.value)}
+                                            required 
+                                        />
+                                    </div>
+                                    
+                                    {loginError && (<p className="error-message">{loginError}</p>)}
 
-                                <button type="submit" className="btn btn-primary" disabled={loading}>
-                                    {loading ? 'Entrando...' : 'Entrar'}
-                                </button>
-                            </form>
+                                    <button type="submit" className="btn btn-primary btn-login" disabled={loading}>
+                                        {loading ? 'Entrando...' : 'Entrar'}
+                                    </button>
+                                </form>
+                            </div>
+
+                            {/* --- COLUNA DE INSCRIÇÃO --- */}
+                            <div className="portal-card signup-col">
+                                <h2>Inscrição</h2>
+                                <form onSubmit={handleRegister} className="portal-form">
+                                    <div className="form-group">
+                                        <label htmlFor="signup-nome" className="form-label">Nome Completo</label>
+                                        <input 
+                                            type="text" 
+                                            id="signup-nome" 
+                                            className="form-input"
+                                            value={regNome}
+                                            onChange={(e) => setRegNome(e.target.value)}
+                                            required 
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="signup-email" className="form-label">Email</label>
+                                        <input 
+                                            type="email" 
+                                            id="signup-email" 
+                                            className="form-input" 
+                                            value={regEmail}
+                                            onChange={(e) => setRegEmail(e.target.value)}
+                                            required 
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label htmlFor="signup-senha" className="form-label">Criar Senha</label>
+                                        <input 
+                                            type="password" 
+                                            id="signup-senha" 
+                                            className="form-input" 
+                                            value={regSenha}
+                                            onChange={(e) => setRegSenha(e.target.value)}
+                                            required 
+                                        />
+                                    </div>
+
+                                    {registerMessage && (
+                                        <p className={registerMessage.startsWith('Erro:') ? 'error-message' : 'success-message'}>
+                                            {registerMessage}
+                                        </p>
+                                    )}
+
+                                    <button type="submit" className="btn btn-red btn-signup" disabled={loading}>
+                                        {loading ? 'Registrando...' : 'Criar Conta'}
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     )}
 
-                    {/* --- ABA DE REGISTRO --- */}
-                    {activeTab === 'registro' && (
-                        <div className="tab-pane signup-col">
-                            <h2>Criar Conta</h2>
-                            <form onSubmit={handleRegister} className="portal-form">
-                                <div className="form-group">
-                                    <label htmlFor="signup-nome" className="form-label">Nome Completo</label>
-                                    <input 
-                                        type="text" 
-                                        id="signup-nome" 
-                                        className="form-input"
-                                        value={regNome}
-                                        onChange={(e) => setRegNome(e.target.value)}
-                                        required 
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="signup-email" className="form-label">Email</label>
-                                    <input 
-                                        type="email" 
-                                        id="signup-email" 
-                                        className="form-input" 
-                                        value={regEmail}
-                                        onChange={(e) => setRegEmail(e.target.value)}
-                                        required 
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label htmlFor="signup-senha" className="form-label">Criar Senha</label>
-                                    <input 
-                                        type="password" 
-                                        id="signup-senha" 
-                                        className="form-input" 
-                                        value={regSenha}
-                                        onChange={(e) => setRegSenha(e.target.value)}
-                                        required 
-                                    />
-                                </div>
-
-                                {registerMessage && (
-                                    <p className={registerMessage.startsWith('Erro:') ? 'error-message' : 'success-message'}>
-                                        {registerMessage}
-                                    </p>
-                                )}
-
-                                <button type="submit" className="btn btn-red" disabled={loading}>
-                                    {loading ? 'Registrando...' : 'Criar Conta'}
-                                </button>
-                            </form>
-                        </div>
-                    )}
-
-                    {/* --- ABA DE RECUPERAÇÃO DE SENHA --- */}
+                    {/* --- VISUALIZAÇÃO DE RESET DE SENHA --- */}
                     {activeTab === 'reset' && (
                         <div className="tab-pane reset-col">
                             <h2>Recuperar Senha</h2>
@@ -252,7 +252,6 @@ function PortalPage() {
                                         name="email"
                                         className="form-input" 
                                         value={resetData.email} 
-                                        // Usando uma função para manusear dados que não são definidos por um setter simples
                                         onChange={(e) => setResetData(prev => ({ ...prev, email: e.target.value, error: '', success: '' }))}
                                         required 
                                     />
