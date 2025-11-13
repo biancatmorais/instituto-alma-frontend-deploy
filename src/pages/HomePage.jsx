@@ -2,9 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import EventModal from '../components/EventModal.jsx'; 
 
-// Define a URL base da API
-// Correção final: Usa process.env.RAILWAY_API_URL para forçar a leitura da variável de ambiente Vercel
-const API_URL = process.env.RAILWAY_API_URL || 'https://instituto-alma-backend-azure-production.up.railway.app';
+// Define a URL base da API (Esta é a sintaxe final que deve funcionar no Vercel)
+const API_URL = process.env.RAILWAY_API_URL || 'http://localhost:4000';
 
 const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -49,7 +48,6 @@ function HomePage() {
     const fetchEventos = useCallback(async () => {
         setIsLoadingEventos(true);
         try {
-            // CORRIGIDO: Usa a variável API_URL
             const response = await fetch(`${API_URL}/api/eventos`); 
             if (!response.ok) throw new Error('Falha ao buscar eventos do servidor');
             const data = await response.json();
@@ -73,7 +71,6 @@ function HomePage() {
     const fetchAtividades = useCallback(async () => {
         setIsLoadingAtividades(true);
         try {
-            // CORRIGIDO: Usa a variável API_URL
             const response = await fetch(`${API_URL}/api/atividades`); 
             if (!response.ok) throw new Error('Falha ao buscar atividades');
             const data = await response.json();
@@ -269,7 +266,6 @@ function HomePage() {
             mensagem: ouvidoriaMensagem
         };
         try {
-            // CORRIGIDO: Usa a variável API_URL
             const response = await fetch(`${API_URL}/api/ouvidoria`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -297,8 +293,7 @@ function HomePage() {
             {/* O componente EventModal é renderizado sobre o conteúdo principal se isModalOpen for true */}
             {isModalOpen && <EventModal onClose={closeModal} />}
 
-            {/* --- NOVO: CABEÇALHO/NAVEGAÇÃO (CORRIGIDO PARA NÃO SER DUPLICADO) --- */}
-            {/* ESTA É A VERSÃO QUE DEVE VIR DO SEU COMPONENTE DE LAYOUT/NAVBAR */}
+            {/* --- NOVO: CABEÇALHO/NAVEGAÇÃO (RESTAURADO) --- */}
             <header className="main-header">
                 <nav className="main-nav">
                     <div className="logo">Alma</div>
@@ -312,7 +307,7 @@ function HomePage() {
                     <div className="nav-actions">
                         {/* Botão Seja um Doador */}
                         <Link to="/doar" className="btn btn-secondary">Seja um Doador</Link>
-                        {/* CORRIGIDO: Botão Portal do Doador */}
+                        {/* Botão Portal do Doador */}
                         <Link to="/portal" className="btn btn-primary portal-btn">Portal do Doador</Link>
                     </div>
                 </nav>
