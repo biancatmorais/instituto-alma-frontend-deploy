@@ -1,13 +1,20 @@
 import React, { useState } from 'react';
 
+<<<<<<< HEAD
 function EventModal({ onClose }) {
   // --- ESTADOS (Obrigatórios para o formulário) ---
+=======
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://instituto-alma-backend-azure-production.up.railway.app';
+
+function EventModal({ onClose }) {
+>>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [isEnviado, setIsEnviado] = useState(false);
   const [formMessage, setFormMessage] = useState('');
 
   const handleSubmit = async (e) => {
+<<<<<<< HEAD
     e.preventDefault(); 
     setFormMessage('');
 
@@ -109,6 +116,46 @@ function EventModal({ onClose }) {
               <button type="submit" className="btn btn-red" style={{ width: '100%' }}>
                 Enviar Inscrição
               </button>
+=======
+    e.preventDefault();
+    setFormMessage('');
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/inscricoes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email }),
+      });
+
+      let data = {};
+      try { data = await response.json(); } catch { data.message = 'Inscrição realizada com sucesso!'; }
+
+      if (!response.ok) throw new Error(data.message || 'Erro ao enviar inscrição.');
+      setIsEnviado(true);
+      setFormMessage(data.message);
+      setNome('');
+      setEmail('');
+      setTimeout(() => onClose(), 3000);
+    } catch (error) {
+      setFormMessage(error.message);
+      setIsEnviado(true);
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <button className="modal-close-btn" onClick={onClose}>&times;</button>
+        {!isEnviado ? (
+          <>
+            <h2>Seja Notificado!</h2>
+            <p>Preencha seus dados e avisaremos sobre os próximos eventos.</p>
+            <form onSubmit={handleSubmit}>
+              <label>Nome</label>
+              <input value={nome} onChange={e => setNome(e.target.value)} required />
+              <label>Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+              <button type="submit" className="btn btn-red">Enviar Inscrição</button>
+>>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
             </form>
           </>
         ) : (
@@ -124,4 +171,8 @@ function EventModal({ onClose }) {
   );
 }
 
+<<<<<<< HEAD
 export default EventModal;
+=======
+export default EventModal;
+>>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d

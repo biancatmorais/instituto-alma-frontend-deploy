@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+<<<<<<< HEAD
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -13,10 +14,20 @@
     "cors": "^2.8.5",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+=======
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-icons": "^5.5.0",
+>>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
     "react-router-dom": "^7.9.5",
     "react-router-hash-link": "^2.4.3"
   },
   "devDependencies": {
+<<<<<<< HEAD
     "@eslint/js": "^9.36.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
@@ -29,5 +40,9 @@
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.1.14"
+=======
+    "@vitejs/plugin-react": "^4.3.2",
+    "vite": "^5.4.10"
+>>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
   }
 }
