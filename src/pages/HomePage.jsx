@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import EventModal from '../components/EventModal.jsx'; // Garanta que a extensão .jsx está correta
+import EventModal from '../components/EventModal.jsx'; 
 
 // Define a URL base da API
-// Correção final: Usa process.env.RAILWAY_API_URL
+// Correção final: Usa process.env.RAILWAY_API_URL para forçar a leitura da variável de ambiente Vercel
 const API_URL = process.env.RAILWAY_API_URL || 'https://instituto-alma-backend-azure-production.up.railway.app';
 
 const formatDate = (dateString) => {
@@ -68,7 +68,7 @@ function HomePage() {
         } finally {
             setIsLoadingEventos(false); 
         }
-    }, [API_URL]); // Adiciona API_URL como dependência
+    }, [API_URL]); 
 
     const fetchAtividades = useCallback(async () => {
         setIsLoadingAtividades(true);
@@ -84,7 +84,7 @@ function HomePage() {
         } finally {
             setIsLoadingAtividades(false); 
         }
-    }, [API_URL]); // Adiciona API_URL como dependência
+    }, [API_URL]); 
 
     useEffect(() => {
         fetchEventos();
@@ -297,25 +297,7 @@ function HomePage() {
             {/* O componente EventModal é renderizado sobre o conteúdo principal se isModalOpen for true */}
             {isModalOpen && <EventModal onClose={closeModal} />}
 
-            {/* --- NOVO: CABEÇALHO/NAVEGAÇÃO (para o botão Portal do Doador) --- */}
-            <header className="main-header">
-                <nav className="main-nav">
-                    <div className="logo">Alma</div>
-                    <ul className="nav-links">
-                        <li><Link to="/#sobre-nos">Sobre Nós</Link></li>
-                        <li><Link to="/#atividades">Nossas Atividades</Link></li>
-                        <li><Link to="/#transparencia">Transparência</Link></li>
-                        <li><Link to="/#eventos">Eventos</Link></li>
-                        <li><Link to="/#ouvidoria">Ouvidoria</Link></li>
-                    </ul>
-                    <div className="nav-actions">
-                        {/* Botão Seja um Doador */}
-                        <Link to="/doar" className="btn btn-secondary">Seja um Doador</Link>
-                        {/* CORRIGIDO: Botão Portal do Doador */}
-                        <Link to="/portal" className="btn btn-primary portal-btn">Portal do Doador</Link>
-                    </div>
-                </nav>
-            </header>
+            {/* --- NOVO: CABEÇALHO/NAVEGAÇÃO (REMOVIDO CÓDIGO DUPLICADO) --- */}
             
             <main>
 
