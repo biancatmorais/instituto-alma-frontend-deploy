@@ -197,12 +197,12 @@ const fetchEventos = useCallback(async () => {
       );
     }
 
-    const imageBaseUrl = 'http://localhost:4000/uploads/';
+   const imageBaseUrl = `${API_URL}/uploads/`;
 
-    return atividades.map((atividade, index) => (
-      <div
-        key={atividade.id}
-        className={`carousel-slide ${activeSlide === index ? 'active-slide' : ''}`}
+return atividades.map((atividade, index) => (
+  <div
+    key={atividade.id}
+    className={`carousel-slide ${activeSlide === index ? 'active-slide' : ''}`}
       >
         <div className="slide-top-bar" style={{ backgroundColor: slidesData[index % slidesData.length].barColor }}></div>
         <div className="slide-content-wrapper">
