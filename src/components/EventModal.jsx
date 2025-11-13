@@ -1,25 +1,24 @@
 import React, { useState } from 'react';
 
-<<<<<<< HEAD
-function EventModal({ onClose }) {
-  // --- ESTADOS (Obrigatórios para o formulário) ---
-=======
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://instituto-alma-backend-azure-production.up.railway.app';
+// Define a URL base da API (lendo do ambiente, ou usando fallback local para desenvolvimento)
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
 function EventModal({ onClose }) {
->>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
+
+  // --- ESTADOS (Obrigatórios para o formulário) ---
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [isEnviado, setIsEnviado] = useState(false);
   const [formMessage, setFormMessage] = useState('');
 
+  // Lógica de envio do formulário de inscrição
   const handleSubmit = async (e) => {
-<<<<<<< HEAD
     e.preventDefault(); 
     setFormMessage('');
 
     try {
-      const response = await fetch('http://localhost:4000/api/inscricoes', {
+      // Usa a URL base da API configurada para o endpoint de inscrições
+      const response = await fetch(`${API_BASE_URL}/api/inscricoes`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -27,61 +26,45 @@ function EventModal({ onClose }) {
         body: JSON.stringify({ nome, email }),
       });
       
-<<<<<<< HEAD
-=======
-      // Tenta ler o corpo JSON, mas não falha se estiver vazio
->>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
       let data = {};
       try {
-          data = await response.json();
+        // Tenta ler a resposta JSON
+        data = await response.json();
       } catch (jsonError) {
-<<<<<<< HEAD
-=======
-          // Se falhar a leitura (porque o corpo está vazio), 
-          // usaremos uma mensagem padrão se o status for 2xx.
->>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
-          data.message = 'Inscrição realizada com sucesso! Avisaremos sobre novos eventos.';
+        // Caso o servidor responda com sucesso, mas sem um corpo JSON (ex: status 204), usamos uma mensagem padrão.
+        data.message = 'Inscrição realizada com sucesso! Avisaremos sobre novos eventos.';
       }
 
       if (!response.ok) {
+        // Lança erro se a resposta não for 2xx
         throw new Error(data.message || 'Erro ao enviar inscrição.');
       }
 
+      // Sucesso
       setIsEnviado(true);
-<<<<<<< HEAD
-      setFormMessage(data.message); 
+      setFormMessage(data.message || 'Inscrição efetuada com sucesso!'); 
 
-=======
-      // Usa a mensagem lida ou a mensagem padrão de sucesso.
-      setFormMessage(data.message); 
-
-      // Limpa os campos após o sucesso
->>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
       setNome('');
       setEmail('');
 
+      // Fecha o modal após 3 segundos
       setTimeout(() => {
         onClose();
       }, 3000);
 
     } catch (error) {
       console.error('Erro no formulário do modal:', error);
-<<<<<<< HEAD
-=======
-      // Mostra o erro 
->>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
-      setFormMessage(error.message);
-      setIsEnviado(true); 
+      // Exibe a mensagem de erro no modal
+      setFormMessage(`Erro: ${error.message}`);
+      setIsEnviado(true); // Muda para a visualização de mensagem
     }
   };
   
-<<<<<<< HEAD
-=======
-  // --- JSX (O que aparece na tela) ---
->>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+    // Ouve o clique no overlay para fechar o modal
+    <div className="modal-overlay" onClick={onClose}> 
+      {/* Impede que o clique dentro do modal feche-o */}
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}> 
         
         <button className="modal-close-btn" onClick={onClose}>&times;</button>
         
@@ -116,52 +99,13 @@ function EventModal({ onClose }) {
               <button type="submit" className="btn btn-red" style={{ width: '100%' }}>
                 Enviar Inscrição
               </button>
-=======
-    e.preventDefault();
-    setFormMessage('');
-    try {
-      const response = await fetch(`${API_BASE_URL}/api/inscricoes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email }),
-      });
-
-      let data = {};
-      try { data = await response.json(); } catch { data.message = 'Inscrição realizada com sucesso!'; }
-
-      if (!response.ok) throw new Error(data.message || 'Erro ao enviar inscrição.');
-      setIsEnviado(true);
-      setFormMessage(data.message);
-      setNome('');
-      setEmail('');
-      setTimeout(() => onClose(), 3000);
-    } catch (error) {
-      setFormMessage(error.message);
-      setIsEnviado(true);
-    }
-  };
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <button className="modal-close-btn" onClick={onClose}>&times;</button>
-        {!isEnviado ? (
-          <>
-            <h2>Seja Notificado!</h2>
-            <p>Preencha seus dados e avisaremos sobre os próximos eventos.</p>
-            <form onSubmit={handleSubmit}>
-              <label>Nome</label>
-              <input value={nome} onChange={e => setNome(e.target.value)} required />
-              <label>Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-              <button type="submit" className="btn btn-red">Enviar Inscrição</button>
->>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
             </form>
           </>
         ) : (
           <div className="modal-success">
-            <h2 style={{ color: formMessage.startsWith('Erro:') ? '#C6421E' : '#81C784' }}>
-              {formMessage.startsWith('Erro:') ? 'Erro!' : 'Obrigado!'}
+            {/* Usa a cor vermelha para erros e uma cor de sucesso para mensagens positivas */}
+            <h2 style={{ color: formMessage && formMessage.startsWith('Erro:') ? '#f06678' : '#6efff1' }}>
+              {formMessage && formMessage.startsWith('Erro:') ? 'Houve um Erro!' : 'Inscrição Feita!'}
             </h2>
             <p>{formMessage}</p>
           </div>
@@ -171,8 +115,4 @@ function EventModal({ onClose }) {
   );
 }
 
-<<<<<<< HEAD
 export default EventModal;
-=======
-export default EventModal;
->>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d

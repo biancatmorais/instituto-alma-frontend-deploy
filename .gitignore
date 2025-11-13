@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Dependências
 /node_modules
 
@@ -8,13 +7,3 @@
 # Pasta de build de produção
 /dist
 /build
-=======
-# Node modules
-node_modules/
-
-# Build output
-dist/
-
-# Environment variables
-.env
->>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d

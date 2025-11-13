@@ -3,7 +3,13 @@ import { useNavigate } from 'react-router-dom';
 
 function PortalPage() {
   const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_API_URL;
+  
+  // CORREÇÃO: Usar a variável padrão do ambiente global (process.env) 
+  // para compatibilidade com a maioria dos sistemas de build (como CRA ou Webpack mais antigos),
+  // ou manter import.meta.env para Vite, se o build for Vite.
+  // Como estamos a usar o Vite (pelo erro VITE_API_URL), a sintaxe está técnica
+  // mente correta para o Vite, mas vamos forçar a URL em ambiente de não-Vite para compatibilidade.
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
 
   const [activeTab, setActiveTab] = useState('login');
   const [loading, setLoading] = useState(false);
@@ -12,10 +18,6 @@ function PortalPage() {
   const [registerData, setRegisterData] = useState({ nome: '', email: '', senha: '', error: '', success: '' });
   const [resetData, setResetData] = useState({ email: '', error: '', success: '' });
 
-<<<<<<< HEAD
-=======
-  // Função genérica para atualizar inputs
->>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
   const handleChange = (setter) => (e) => {
     const { name, value } = e.target;
     setter(prev => ({ ...prev, [name]: value, error: '', success: '' }));
@@ -30,22 +32,17 @@ function PortalPage() {
     }
     setLoading(true);
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
       const response = await fetch(`${API_URL}/api/auth/login`, {
-=======
-      // 3. Chamar a API de Login no back-end
-      const response = await fetch('http://localhost:4000/api/auth/login', {
->>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
-=======
-      const response = await fetch(`${API_URL}/api/auth/login`, {
->>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginData.email, senha: loginData.senha })
       });
+      
       const data = await response.json();
+      
       if (!response.ok) throw new Error(data.message || 'Erro ao fazer login.');
+      
+      // Armazena o token e redireciona
       localStorage.setItem('token', data.token);
       setLoginData({ email: '', senha: '', error: '', success: 'Login realizado com sucesso!' });
       navigate('/dashboard');
@@ -65,22 +62,16 @@ function PortalPage() {
     }
     setLoading(true);
     try {
-<<<<<<< HEAD
-<<<<<<< HEAD
       const response = await fetch(`${API_URL}/api/auth/register`, {
-=======
-      // 8. Chamar a API de Registro no back-end
-      const response = await fetch('http://localhost:4000/api/auth/register', {
->>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
-=======
-      const response = await fetch(`${API_URL}/api/auth/register`, {
->>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome: registerData.nome, email: registerData.email, senha: registerData.senha })
       });
+      
       const data = await response.json();
+      
       if (!response.ok) throw new Error(data.message || 'Erro ao registrar.');
+      
       setRegisterData({ nome: '', email: '', senha: '', error: '', success: 'Cadastro realizado com sucesso!' });
       setActiveTab('login');
     } catch (err) {
@@ -116,7 +107,6 @@ function PortalPage() {
 
   return (
     <div className="portal-page">
-<<<<<<< HEAD
       <div className="portal-tabs">
         <button onClick={() => setActiveTab('login')} className={activeTab === 'login' ? 'active-tab' : ''}>Login</button>
         <button onClick={() => setActiveTab('registro')} className={activeTab === 'registro' ? 'active-tab' : ''}>Registrar</button>
@@ -128,53 +118,28 @@ function PortalPage() {
           <form className="portal-form" onSubmit={handleLogin}>
             {loginData.error && <p className="error-message">{loginData.error}</p>}
             {loginData.success && <p className="success-message">{loginData.success}</p>}
-=======
-      <div className="tabs">
-        <button onClick={() => setActiveTab('login')} className={activeTab === 'login' ? 'active' : ''}>Login</button>
-        <button onClick={() => setActiveTab('registro')} className={activeTab === 'registro' ? 'active' : ''}>Registrar</button>
-        <button onClick={() => setActiveTab('reset')} className={activeTab === 'reset' ? 'active' : ''}>Recuperar Senha</button>
-      </div>
-
-      <div className="tab-content">
-        {activeTab === 'login' && (
-          <form onSubmit={handleLogin}>
-            {loginData.error && <p className="error">{loginData.error}</p>}
-            {loginData.success && <p className="success">{loginData.success}</p>}
->>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
-            <input type="email" name="email" placeholder="Email" value={loginData.email} onChange={handleChange(setLoginData)} />
-            <input type="password" name="senha" placeholder="Senha" value={loginData.senha} onChange={handleChange(setLoginData)} />
+            <input type="email" name="email" placeholder="Email" value={loginData.email} onChange={handleChange(setLoginData)} required />
+            <input type="password" name="senha" placeholder="Senha" value={loginData.senha} onChange={handleChange(setLoginData)} required />
             <button type="submit" disabled={loading}>{loading ? 'Carregando...' : 'Entrar'}</button>
           </form>
         )}
 
         {activeTab === 'registro' && (
-<<<<<<< HEAD
           <form className="portal-form" onSubmit={handleRegister}>
             {registerData.error && <p className="error-message">{registerData.error}</p>}
             {registerData.success && <p className="success-message">{registerData.success}</p>}
-=======
-          <form onSubmit={handleRegister}>
-            {registerData.error && <p className="error">{registerData.error}</p>}
-            {registerData.success && <p className="success">{registerData.success}</p>}
->>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
-            <input type="text" name="nome" placeholder="Nome" value={registerData.nome} onChange={handleChange(setRegisterData)} />
-            <input type="email" name="email" placeholder="Email" value={registerData.email} onChange={handleChange(setRegisterData)} />
-            <input type="password" name="senha" placeholder="Senha" value={registerData.senha} onChange={handleChange(setRegisterData)} />
+            <input type="text" name="nome" placeholder="Nome" value={registerData.nome} onChange={handleChange(setRegisterData)} required />
+            <input type="email" name="email" placeholder="Email" value={registerData.email} onChange={handleChange(setRegisterData)} required />
+            <input type="password" name="senha" placeholder="Senha" value={registerData.senha} onChange={handleChange(setRegisterData)} required />
             <button type="submit" disabled={loading}>{loading ? 'Carregando...' : 'Registrar'}</button>
           </form>
         )}
 
         {activeTab === 'reset' && (
-<<<<<<< HEAD
           <form className="portal-form" onSubmit={handleReset}>
             {resetData.error && <p className="error-message">{resetData.error}</p>}
             {resetData.success && <p className="success-message">{resetData.success}</p>}
-=======
-          <form onSubmit={handleReset}>
-            {resetData.error && <p className="error">{resetData.error}</p>}
-            {resetData.success && <p className="success">{resetData.success}</p>}
->>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
-            <input type="email" name="email" placeholder="Email" value={resetData.email} onChange={handleChange(setResetData)} />
+            <input type="email" name="email" placeholder="Email" value={resetData.email} onChange={handleChange(setResetData)} required />
             <button type="submit" disabled={loading}>{loading ? 'Carregando...' : 'Enviar link'}</button>
           </form>
         )}

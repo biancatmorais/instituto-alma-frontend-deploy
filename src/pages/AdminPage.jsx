@@ -1,19 +1,21 @@
-import React, { useState, useEffect, useCallback } from 'react'; 
-<<<<<<< HEAD
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-=======
->>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
-import { useAuth } from '../context/TempAuthContext.jsx'; 
+import { useAuth } from '../context/AuthContext.jsx'; // Caminho assumido como correto: AuthContext.jsx
 import EditAtividadeModal from '../components/EditAtividadeModal.jsx'; 
 import EditDocumentoModal from '../components/EditDocumentoModal.jsx'; 
 import EditMetaModal from '../components/EditMetaModal.jsx'; 
 import EditEventoModal from '../components/EditEventoModal.jsx'; 
 
+// Define a URL base da API (lendo do ambiente, ou usando fallback local para desenvolvimento)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
 function AdminPage() {
-<<<<<<< HEAD
-<<<<<<< HEAD
-    
+    // A variável 'token' é usada para autenticar todas as chamadas privadas
     const { token } = useAuth(); 
+
+    // -------------------------------------------------------------
+    // --- ESTADOS DE CONTROLE DE MODAIS E ITENS SELECIONADOS ---
+    // -------------------------------------------------------------
 
     const [isEditAtividadeModalOpen, setIsEditAtividadeModalOpen] = useState(false);
     const [currentAtividadeId, setCurrentAtividadeId] = useState(null);
@@ -24,6 +26,10 @@ function AdminPage() {
     const [isEditEventoModalOpen, setIsEditEventoModalOpen] = useState(false); 
     const [currentEventoId, setCurrentEventoId] = useState(null); 
 
+    // -------------------------------------------------------------
+    // --- ESTADOS DE DADOS, LOADING E ERROS ---
+    // -------------------------------------------------------------
+    
     const [mensagens, setMensagens] = useState([]);
     const [isLoadingMensagens, setIsLoadingMensagens] = useState(true);
     const [errorMensagens, setErrorMensagens] = useState(null);
@@ -70,99 +76,74 @@ function AdminPage() {
     const [isLoadingInscricoes, setIsLoadingInscricoes] = useState(true);
     const [errorInscricoes, setErrorInscricoes] = useState(null);
 
-    const fetchMensagens = useCallback(async () => {
-        if (!token) {
-            setIsLoadingMensagens(false);
-            setErrorMensagens('Token ausente. Não foi possível carregar as mensagens.');
+    // -------------------------------------------------------------
+    // --- FUNÇÕES DE FETCH (Buscar Dados) ---
+    // -------------------------------------------------------------
+
+    // Função genérica para fetch com ou sem token
+    const fetchData = useCallback(async (endpoint, setState, setLoading, setError, needsAuth = false) => {
+        setLoading(true);
+        setError(null);
+
+        const headers = needsAuth && token ? { 'Authorization': `Bearer ${token}` } : {};
+
+        // Adiciona guarda de autenticação
+        if (needsAuth && !token) {
+            setLoading(false);
+            setError('Autenticação necessária para carregar dados.');
             return;
         }
-        setIsLoadingMensagens(true);
+
         try {
-            const response = await fetch('http://localhost:4000/api/ouvidoria', { headers: { 'Authorization': `Bearer ${token}` }});
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Falha ao buscar mensagens.');
+            const response = await fetch(`${API_URL}${endpoint}`, { headers });
+
+            let data = {};
+            try {
+                data = await response.json();
+            } catch (e) {
+                // Se a resposta não tiver corpo JSON, tratamos como erro do lado do cliente
+                if (!response.ok) throw new Error(`Falha no servidor: ${response.status}`);
             }
-            setMensagens(await response.json());
-            setErrorMensagens(null);
-        } catch (err) { setErrorMensagens(err.message); } 
-        finally { setIsLoadingMensagens(false); }
-    }, [token]);
-
-    const fetchEventos = useCallback(async () => {
-        setIsLoadingEventos(true);
-        try {
-            const response = await fetch('http://localhost:4000/api/eventos');
-            if (!response.ok) throw new Error('Falha ao buscar eventos');
-            setEventos(await response.json());
-            setErrorEventos(null);
-        } catch (err) { setErrorEventos(err.message); } 
-        finally { setIsLoadingEventos(false); }
-    }, []);
-
-    const fetchAtividades = useCallback(async () => {
-        setIsLoadingAtividades(true);
-        try {
-            const response = await fetch('http://localhost:4000/api/atividades');
-            if (!response.ok) throw new Error('Falha ao buscar atividades');
-            setAtividades(await response.json());
-            setErrorAtividades(null);
-        } catch (err) { setErrorAtividades(err.message); } 
-        finally { setIsLoadingAtividades(false); }
-    }, []);
-
-    const fetchDocumentos = useCallback(async () => {
-        setIsLoadingDocumentos(true);
-        try {
-            const response = await fetch('http://localhost:4000/api/documentos');
-            if (!response.ok) throw new Error('Falha ao buscar documentos');
-            setDocumentos(await response.json());
-            setErrorDocumentos(null);
-        } catch (err) { setErrorDocumentos(err.message); } 
-        finally { setIsLoadingDocumentos(false); }
-    }, []);
-
-    const fetchMetas = useCallback(async () => {
-        setIsLoadingMetas(true);
-        try {
-            const response = await fetch('http://localhost:4000/api/metas');
-            if (!response.ok) throw new Error('Falha ao buscar metas');
-            setMetas(await response.json());
-            setErrorMetas(null);
-        } catch (err) { setErrorMetas(err.message); } 
-        finally { setIsLoadingMetas(false); }
-    }, []);
-
-    const fetchInscricoes = useCallback(async () => {
-        if (!token) {
-            setIsLoadingInscricoes(false);
-            setErrorInscricoes('Acesso negado ou token ausente. Faça login novamente.');
-            return; 
-        }
-
-        setIsLoadingInscricoes(true);
-        try {
-            const response = await fetch('http://localhost:4000/api/inscricoes', { 
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
 
             if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || 'Falha ao buscar inscrições: Erro de servidor.');
+                throw new Error(data.message || 'Falha ao buscar dados.');
             }
-            
-            setInscricoes(await response.json());
-            setErrorInscricoes(null);
+
+            setState(data);
         } catch (err) { 
-            setErrorInscricoes(err.message); 
-        } 
-        finally { 
-            setIsLoadingInscricoes(false); 
+            setError(err.message); 
+        } finally { 
+            setLoading(false); 
         }
     }, [token]);
+
+    const fetchMensagens = useCallback(() => {
+        fetchData('/api/ouvidoria', setMensagens, setIsLoadingMensagens, setErrorMensagens, true);
+    }, [fetchData]);
+
+    const fetchEventos = useCallback(() => {
+        fetchData('/api/eventos', setEventos, setIsLoadingEventos, setErrorEventos);
+    }, [fetchData]);
+
+    const fetchAtividades = useCallback(() => {
+        fetchData('/api/atividades', setAtividades, setIsLoadingAtividades, setErrorAtividades);
+    }, [fetchData]);
+
+    const fetchDocumentos = useCallback(() => {
+        fetchData('/api/documentos', setDocumentos, setIsLoadingDocumentos, setErrorDocumentos);
+    }, [fetchData]);
+
+    const fetchMetas = useCallback(() => {
+        fetchData('/api/metas', setMetas, setIsLoadingMetas, setErrorMetas);
+    }, [fetchData]);
+
+    const fetchInscricoes = useCallback(() => {
+        fetchData('/api/inscricoes', setInscricoes, setIsLoadingInscricoes, setErrorInscricoes, true);
+    }, [fetchData]);
 
 
     useEffect(() => {
+        // Carrega todos os dados na inicialização
         fetchMensagens();
         fetchEventos();
         fetchAtividades(); 
@@ -172,66 +153,42 @@ function AdminPage() {
     }, [fetchMensagens, fetchEventos, fetchAtividades, fetchDocumentos, fetchMetas, fetchInscricoes]);
 
 
-    const handleOpenEditAtividadeModal = (id) => {
-        setCurrentAtividadeId(id);
-        setIsEditAtividadeModalOpen(true);
-    };
-    const handleCloseEditAtividadeModal = () => {
-        setIsEditAtividadeModalOpen(false);
-        setCurrentAtividadeId(null);
-        fetchAtividades(); 
-    };
+    // -------------------------------------------------------------
+    // --- FUNÇÕES DE CONTROLE DE MODAIS ---
+    // -------------------------------------------------------------
 
-    const handleOpenEditDocModal = (id) => {
-        setCurrentDocId(id);
-        setIsEditDocModalOpen(true);
-    };
-    const handleCloseEditDocModal = () => {
-        setIsEditDocModalOpen(false);
-        setCurrentDocId(null);
-        fetchDocumentos(); 
-    };
-
-    const handleOpenEditMetaModal = (id) => {
-        setCurrentMetaId(id);
-        setIsEditMetaModalOpen(true);
-    };
-    const handleCloseEditMetaModal = () => {
-        setIsEditMetaModalOpen(false);
-        setCurrentMetaId(null);
-        fetchMetas();
-    };
-
-    const handleOpenEditEventoModal = (id) => { 
-        setCurrentEventoId(id);
-        setIsEditEventoModalOpen(true);
-    };
-    const handleCloseEditEventoModal = () => { 
-        setIsEditEventoModalOpen(false);
-        setCurrentEventoId(null);
-        fetchEventos(); 
-    };
+    // Atividades
+    const handleOpenEditAtividadeModal = (id) => { setCurrentAtividadeId(id); setIsEditAtividadeModalOpen(true); };
+    const handleCloseEditAtividadeModal = () => { setIsEditAtividadeModalOpen(false); setCurrentAtividadeId(null); fetchAtividades(); };
+    // Documentos
+    const handleOpenEditDocModal = (id) => { setCurrentDocId(id); setIsEditDocModalOpen(true); };
+    const handleCloseEditDocModal = () => { setIsEditDocModalOpen(false); setCurrentDocId(null); fetchDocumentos(); };
+    // Metas
+    const handleOpenEditMetaModal = (id) => { setCurrentMetaId(id); setIsEditMetaModalOpen(true); };
+    const handleCloseEditMetaModal = () => { setIsEditMetaModalOpen(false); setCurrentMetaId(null); fetchMetas(); };
+    // Eventos
+    const handleOpenEditEventoModal = (id) => { setCurrentEventoId(id); setIsEditEventoModalOpen(true); }; 
+    const handleCloseEditEventoModal = () => { setIsEditEventoModalOpen(false); setCurrentEventoId(null); fetchEventos(); };
 
 
+    // -------------------------------------------------------------
+    // --- FUNÇÕES DE AÇÃO (Criar/Deletar) ---
+    // -------------------------------------------------------------
+    
+    // --- Eventos: Criar ---
     const handleCreateEvento = async (e) => {
         e.preventDefault();
         setEventoFormError('');
         setEventoFormSuccess('');
 
-        console.error('DEBUG: Dados do Evento a enviar (FRONTEND):', { eventoTitulo, eventoData, eventoLocal, eventoDesc }); 
-
         if (!eventoTitulo || !eventoData || !eventoLocal || !eventoDesc) {
             setEventoFormError('Todos os campos (título, descrição, data, local) são obrigatórios.');
             return; 
         }
-
-        if (!token) {
-            setEventoFormError('Autenticação inválida.');
-            return;
-        }
+        if (!token) { setEventoFormError('Autenticação inválida.'); return; }
 
         try {
-            const response = await fetch('http://localhost:4000/api/eventos', {
+            const response = await fetch(`${API_URL}/api/eventos`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -246,10 +203,7 @@ function AdminPage() {
             });
 
             const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Erro ao criar evento.');
-            }
+            if (!response.ok) throw new Error(data.message || 'Erro ao criar evento.');
 
             setEventoFormSuccess('Evento criado com sucesso!');
             setEventoTitulo('');
@@ -257,18 +211,19 @@ function AdminPage() {
             setEventoData('');
             setEventoLocal('');
             fetchEventos();
-            
         } catch (error) {
             console.error('Erro ao criar evento:', error.message);
             setEventoFormError(error.message);
         }
     };
 
+    // --- Eventos: Deletar ---
     const handleDeleteEvento = async (eventoId) => {
+        // Substituído window.confirm por uma verificação de estado no futuro para melhor UI
         if (!window.confirm('Tem certeza que deseja apagar este evento?')) return;
         
         try {
-            const response = await fetch(`http://localhost:4000/api/eventos/${eventoId}`, {
+            const response = await fetch(`${API_URL}/api/eventos/${eventoId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` },
             });
@@ -280,11 +235,13 @@ function AdminPage() {
 
             fetchEventos();
         } catch (error) {
-            alert(`Falha ao apagar evento: ${error.message}`);
+            // Em produção, isso seria um modal de erro
             console.error('Erro ao apagar evento:', error);
+            setEventoFormError(`Falha ao apagar evento: ${error.message}`);
         }
     };
 
+    // --- Atividades: Criar ---
     const handleCreateAtividade = async (e) => {
         e.preventDefault();
         setAtivFormError('');
@@ -294,6 +251,8 @@ function AdminPage() {
             setAtivFormError('Preencha Título, Descrição e Imagem 1.');
             return;
         }
+        if (!token) { setAtivFormError('Autenticação inválida.'); return; }
+
 
         const formData = new FormData();
         formData.append('titulo', ativTitulo);
@@ -305,17 +264,15 @@ function AdminPage() {
         if (imagem4) formData.append('images', imagem4);
 
         try {
-            const response = await fetch('http://localhost:4000/api/atividades', {
+            const response = await fetch(`${API_URL}/api/atividades`, {
                 method: 'POST',
+                // Não precisa de Content-Type: multipart/form-data, o FormData faz isso
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData,
             });
 
             const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Erro ao criar atividade.');
-            }
+            if (!response.ok) throw new Error(data.message || 'Erro ao criar atividade.');
 
             setAtivFormSuccess('Atividade criada com sucesso!');
             setAtivTitulo('');
@@ -324,7 +281,7 @@ function AdminPage() {
             setImagem2(null);
             setImagem3(null);
             setImagem4(null);
-            e.target.reset();
+            e.target.reset(); // Limpa os inputs de arquivo
             fetchAtividades();
         } catch (error) {
             console.error('Erro ao criar atividade:', error.message);
@@ -332,11 +289,12 @@ function AdminPage() {
         }
     };
 
+    // --- Atividades: Deletar ---
     const handleDeleteAtividade = async (atividadeId) => {
         if (!window.confirm('Tem certeza que deseja apagar esta atividade?')) return;
         
         try {
-            const response = await fetch(`http://localhost:4000/api/atividades/${atividadeId}`, {
+            const response = await fetch(`${API_URL}/api/atividades/${atividadeId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` },
             });
@@ -348,11 +306,12 @@ function AdminPage() {
 
             fetchAtividades();
         } catch (error) {
-            alert(`Falha ao apagar atividade: ${error.message}`);
             console.error('Erro ao apagar atividade:', error);
+            setAtivFormError(`Falha ao apagar atividade: ${error.message}`);
         }
     };
 
+    // --- Documentos: Criar ---
     const handleCreateDocumento = async (e) => {
         e.preventDefault();
         setDocFormError('');
@@ -362,23 +321,21 @@ function AdminPage() {
             setDocFormError('Preencha Título e selecione o Ficheiro PDF.');
             return;
         }
+        if (!token) { setDocFormError('Autenticação inválida.'); return; }
 
         const formData = new FormData();
         formData.append('titulo', docTitulo);
         formData.append('arquivo', docArquivo);
 
         try {
-            const response = await fetch('http://localhost:4000/api/documentos', {
+            const response = await fetch(`${API_URL}/api/documentos`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData,
             });
 
             const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Erro ao criar documento.');
-            }
+            if (!response.ok) throw new Error(data.message || 'Erro ao criar documento.');
 
             setDocFormSuccess('Documento criado com sucesso!');
             setDocTitulo('');
@@ -391,11 +348,12 @@ function AdminPage() {
         }
     };
 
+    // --- Documentos: Deletar ---
     const handleDeleteDocumento = async (docId) => {
         if (!window.confirm('Tem certeza que deseja apagar este documento?')) return;
 
         try {
-            const response = await fetch(`http://localhost:4000/api/documentos/${docId}`, {
+            const response = await fetch(`${API_URL}/api/documentos/${docId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` },
             });
@@ -407,11 +365,12 @@ function AdminPage() {
 
             fetchDocumentos();
         } catch (error) {
-            alert(`Falha ao apagar documento: ${error.message}`);
             console.error('Erro ao apagar documento:', error);
+            setDocFormError(`Falha ao apagar documento: ${error.message}`);
         }
     };
 
+    // --- Metas: Criar ---
     const handleCreateMeta = async (e) => {
         e.preventDefault();
         setMetaFormError('');
@@ -422,9 +381,11 @@ function AdminPage() {
             setMetaFormError('O valor da meta deve ser um número positivo.');
             return;
         }
+        if (!token) { setMetaFormError('Autenticação inválida.'); return; }
+
 
         try {
-            const response = await fetch('http://localhost:4000/api/metas', {
+            const response = await fetch(`${API_URL}/api/metas`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -437,27 +398,24 @@ function AdminPage() {
             });
 
             const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Erro ao criar meta.');
-            }
+            if (!response.ok) throw new Error(data.message || 'Erro ao criar meta.');
 
             setMetaFormSuccess('Meta criada com sucesso!');
             setMetaTitulo('');
             setMetaValor('');
             fetchMetas();
-            
         } catch (error) {
             console.error('Erro ao criar meta:', error.message);
             setMetaFormError(error.message);
         }
     };
 
+    // --- Metas: Deletar ---
     const handleDeleteMeta = async (metaId) => {
         if (!window.confirm('Tem certeza que deseja apagar esta meta?')) return;
         
         try {
-            const response = await fetch(`http://localhost:4000/api/metas/${metaId}`, {
+            const response = await fetch(`${API_URL}/api/metas/${metaId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` },
             });
@@ -469,11 +427,15 @@ function AdminPage() {
 
             fetchMetas();
         } catch (error) {
-            alert(`Falha ao apagar meta: ${error.message}`);
             console.error('Erro ao apagar meta:', error);
+            setMetaFormError(`Falha ao apagar meta: ${error.message}`);
         }
     };
 
+
+    // -------------------------------------------------------------
+    // --- FUNÇÕES DE RENDERIZAÇÃO DE CONTEÚDO (Tabelas) ---
+    // -------------------------------------------------------------
 
     const renderMensagensContent = () => {
         if (isLoadingMensagens) return <tr><td colSpan="3" style={{ textAlign: 'center' }}>A carregar...</td></tr>;
@@ -549,7 +511,8 @@ function AdminPage() {
             <tr key={doc.id}>
                 <td>{doc.titulo}</td>
                 <td>
-                    <a href={`http://localhost:4000/uploads/${doc.arquivo_url}`} target="_blank" rel="noopener noreferrer">
+                    {/* Substitui a URL local hardcoded por API_URL */}
+                    <a href={`${API_URL}/uploads/${doc.arquivo_url}`} target="_blank" rel="noopener noreferrer">
                         Ver PDF
                     </a>
                 </td>
@@ -578,7 +541,10 @@ function AdminPage() {
         if (errorMetas) return <tr><td colSpan="3" style={{ textAlign: 'center', color: 'red' }}>{errorMetas}</td></tr>;
         if (metas.length === 0) return <tr><td colSpan="3" style={{ textAlign: 'center' }}>Nenhuma meta.</td></tr>;
         return metas.map((meta) => {
+            const valorAtual = parseFloat(meta.valor_atual || 0).toFixed(2);
+            const valorMeta = parseFloat(meta.valor_meta || 0).toFixed(2);
             const porcentagem = meta.valor_meta > 0 ? (meta.valor_atual / meta.valor_meta) * 100 : 0;
+
             return (
                 <tr key={meta.id}>
                     <td>{meta.titulo}</td>
@@ -590,8 +556,8 @@ function AdminPage() {
                             ></div>
                         </div>
                         <div className="goal-labels" style={{ marginTop: '5px' }}>
-                            <span className="current-amount">R$ {meta.valor_atual}</span>
-                            <span className="goal-amount">Meta: R$ {meta.valor_meta}</span>
+                            <span className="current-amount">R$ {valorAtual}</span>
+                            <span className="goal-amount">Meta: R$ {valorMeta}</span>
                         </div>
                     </td>
                     <td style={{ display: 'flex', gap: '5px' }}>
@@ -629,6 +595,7 @@ function AdminPage() {
     };
 
 
+    // --- JSX (O que aparece na tela) ---
     return (
         <>
             <main className="admin-dashboard-wrapper">
@@ -638,6 +605,7 @@ function AdminPage() {
                 <div className="admin-dashboard-container">
                     <div className="admin-col-left">
                         
+                        {/* Card de CRIAR ATIVIDADE */}
                         <div className="admin-card">
                             <h2>Adicionar Nova Atividade (Carrossel)</h2>
                             {atividades.length >= 4 ? (
@@ -678,6 +646,7 @@ function AdminPage() {
                             )}
                         </div>
 
+                        {/* Card de CRIAR DOCUMENTO */}
                         <div className="admin-card">
                             <h2>Adicionar Documento (Transparência)</h2>
                             {documentos.length >= 4 ? (
@@ -702,6 +671,7 @@ function AdminPage() {
                             )}
                         </div>
 
+                        {/* Card de CRIAR META */}
                         <div className="admin-card">
                             <h2>Adicionar Nova Meta de Arrecadação</h2>
                             {metas.length >= 4 ? ( 
@@ -728,6 +698,7 @@ function AdminPage() {
                             )}
                         </div>
 
+                        {/* Card de CRIAR EVENTO */}
                         <div className="admin-card">
                             <h2>Adicionar Novo Evento</h2>
                             <form onSubmit={handleCreateEvento}>
@@ -756,8 +727,10 @@ function AdminPage() {
                         </div>
                     </div>
 
+                    {/* --- COLUNA DA DIREITA (Listas) --- */}
                     <div className="admin-col-right">
                         
+                        {/* Card de LISTAR METAS */}
                         <div className="admin-card">
                             <h2>Metas de Arrecadação Atuais</h2>
                             <table className="admin-table">
@@ -774,6 +747,7 @@ function AdminPage() {
                             </table>
                         </div>
 
+                        {/* Card de LISTAR DOCUMENTOS */}
                         <div className="admin-card">
                             <h2>Documentos Atuais (Transparência)</h2>
                             <table className="admin-table">
@@ -790,6 +764,7 @@ function AdminPage() {
                             </table>
                         </div>
                         
+                        {/* Card de LISTAR ATIVIDADES */}
                         <div className="admin-card">
                             <h2>Atividades Atuais (Carrossel)</h2>
                             <table className="admin-table">
@@ -806,6 +781,7 @@ function AdminPage() {
                             </table>
                         </div>
 
+                        {/* Card de LISTAR EVENTOS */}
                         <div className="admin-card">
                             <h2>Eventos Atuais</h2>
                             <table className="admin-table">
@@ -823,6 +799,7 @@ function AdminPage() {
                             </table>
                         </div>
 
+                        {/* Card de LISTAR MENSAGENS */}
                         <div className="admin-card">
                             <h2>Mensagens da Ouvidoria</h2>
                             <table className="admin-table">
@@ -839,6 +816,7 @@ function AdminPage() {
                             </table>
                         </div>
 
+                        {/* Card de LISTAR INSCRIÇÕES */}
                         <div className="admin-card">
                             <h2>Possíveis Participantes (Notificações)</h2>
                             <table className="admin-table">
@@ -855,6 +833,7 @@ function AdminPage() {
                             </table>
                         </div>
                         
+                        {/* Card de Doações (Estático) */}
                         <div className="admin-card">
                             <h2>Acompanhar Doações</h2>
                             <table className="admin-table">
@@ -865,6 +844,7 @@ function AdminPage() {
                 </div>
             </main>
 
+            {/* RENDERIZAÇÃO DOS MODAIS (Pop-ups) */}
             {isEditAtividadeModalOpen && (
                 <EditAtividadeModal 
                     atividadeId={currentAtividadeId} 
@@ -898,1053 +878,6 @@ function AdminPage() {
             )}
         </>
     );
-=======
-  
-  const { token } = useAuth(); 
-
-  // --- Estados para Modais ---
-  const [isEditAtividadeModalOpen, setIsEditAtividadeModalOpen] = useState(false);
-  const [currentAtividadeId, setCurrentAtividadeId] = useState(null);
-  const [isEditDocModalOpen, setIsEditDocModalOpen] = useState(false); 
-  const [currentDocId, setCurrentDocId] = useState(null); 
-  const [isEditMetaModalOpen, setIsEditMetaModalOpen] = useState(false);
-  const [currentMetaId, setCurrentMetaId] = useState(null);
-
-  // --- Estados para MENSAGENS (Ouvidoria) ---
-  const [mensagens, setMensagens] = useState([]);
-  const [isLoadingMensagens, setIsLoadingMensagens] = useState(true);
-  const [errorMensagens, setErrorMensagens] = useState(null);
-
-  // --- Estados para EVENTOS ---
-  const [eventos, setEventos] = useState([]);
-  const [isLoadingEventos, setIsLoadingEventos] = useState(true);
-  const [errorEventos, setErrorEventos] = useState(null);
-  const [eventoTitulo, setEventoTitulo] = useState('');
-  const [eventoDesc, setEventoDesc] = useState('');
-  const [eventoData, setEventoData] = useState('');
-  const [eventoLocal, setEventoLocal] = useState('');
-  const [eventoFormError, setEventoFormError] = useState('');
-  const [eventoFormSuccess, setEventoFormSuccess] = useState('');
-
-  // --- Estados para ATIVIDADES ---
-  const [atividades, setAtividades] = useState([]); 
-  const [isLoadingAtividades, setIsLoadingAtividades] = useState(true);
-  const [errorAtividades, setErrorAtividades] = useState(null);
-  const [ativTitulo, setAtivTitulo] = useState('');
-  const [ativDescricao, setAtivDescricao] = useState('');
-  const [imagem1, setImagem1] = useState(null);
-  const [imagem2, setImagem2] = useState(null);
-  const [imagem3, setImagem3] = useState(null);
-  const [imagem4, setImagem4] = useState(null);
-  const [ativFormError, setAtivFormError] = useState('');
-  const [ativFormSuccess, setAtivFormSuccess] = useState('');
-
-  // --- Estados para DOCUMENTOS ---
-  const [documentos, setDocumentos] = useState([]);
-  const [isLoadingDocumentos, setIsLoadingDocumentos] = useState(true);
-  const [errorDocumentos, setErrorDocumentos] = useState(null);
-  const [docTitulo, setDocTitulo] = useState('');
-  const [docArquivo, setDocArquivo] = useState(null);
-  const [docFormError, setDocFormError] = useState('');
-  const [docFormSuccess, setDocFormSuccess] = useState('');
-  
-  // --- Estados para METAS ---
-  const [metas, setMetas] = useState([]);
-  const [isLoadingMetas, setIsLoadingMetas] = useState(true);
-  const [errorMetas, setErrorMetas] = useState(null);
-  const [metaTitulo, setMetaTitulo] = useState('');
-  const [metaValor, setMetaValor] = useState('');
-  const [metaFormError, setMetaFormError] = useState('');
-  const [metaFormSuccess, setMetaFormSuccess] = useState('');
-
-  // --- Estados para INSCRIÇÕES ---
-  const [inscricoes, setInscricoes] = useState([]);
-  const [isLoadingInscricoes, setIsLoadingInscricoes] = useState(true);
-  const [errorInscricoes, setErrorInscricoes] = useState(null);
-
-  // --- Funções de FETCH (Buscar Dados) ---
-
-// --- FETCH MENSAGENS (COM GUARDA DE TOKEN) ---
-  const fetchMensagens = useCallback(async () => {
-    if (!token) {
-        setIsLoadingMensagens(false);
-        setErrorMensagens('Token ausente. Não foi possível carregar as mensagens.');
-        return;
-    }
-    setIsLoadingMensagens(true);
-    try {
-      const response = await fetch('http://localhost:4000/api/ouvidoria', { headers: { 'Authorization': `Bearer ${token}` }});
-      if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Falha ao buscar mensagens.');
-      }
-      setMensagens(await response.json());
-      setErrorMensagens(null);
-    } catch (err) { setErrorMensagens(err.message); } 
-    finally { setIsLoadingMensagens(false); }
-  }, [token]);
-
-  const fetchEventos = useCallback(async () => {
-    setIsLoadingEventos(true);
-    try {
-      const response = await fetch('http://localhost:4000/api/eventos');
-      if (!response.ok) throw new Error('Falha ao buscar eventos');
-      setEventos(await response.json());
-      setErrorEventos(null);
-    } catch (err) { setErrorEventos(err.message); } 
-    finally { setIsLoadingEventos(false); }
-  }, []);
-
-  const fetchAtividades = useCallback(async () => {
-    setIsLoadingAtividades(true);
-    try {
-      const response = await fetch('http://localhost:4000/api/atividades');
-      if (!response.ok) throw new Error('Falha ao buscar atividades');
-      setAtividades(await response.json());
-      setErrorAtividades(null);
-    } catch (err) { setErrorAtividades(err.message); } 
-    finally { setIsLoadingAtividades(false); }
-  }, []);
-
-  const fetchDocumentos = useCallback(async () => {
-    setIsLoadingDocumentos(true);
-    try {
-      const response = await fetch('http://localhost:4000/api/documentos');
-      if (!response.ok) throw new Error('Falha ao buscar documentos');
-      setDocumentos(await response.json());
-      setErrorDocumentos(null);
-    } catch (err) { setErrorDocumentos(err.message); } 
-    finally { setIsLoadingDocumentos(false); }
-  }, []);
-
-  const fetchMetas = useCallback(async () => {
-    setIsLoadingMetas(true);
-    try {
-      const response = await fetch('http://localhost:4000/api/metas');
-      if (!response.ok) throw new Error('Falha ao buscar metas');
-      setMetas(await response.json());
-      setErrorMetas(null);
-    } catch (err) { setErrorMetas(err.message); } 
-    finally { setIsLoadingMetas(false); }
-  }, []);
-
-// --- FETCH INSCRIÇÕES (COM GUARDA DE TOKEN) ---
-  const fetchInscricoes = useCallback(async () => {
-    if (!token) {
-        setIsLoadingInscricoes(false);
-        setErrorInscricoes('Acesso negado ou token ausente. Faça login novamente.');
-        return; 
-    }
-
-    setIsLoadingInscricoes(true);
-    try {
-      const response = await fetch('http://localhost:4000/api/inscricoes', { 
-          headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Falha ao buscar inscrições: Erro de servidor.');
-      }
-      
-      setInscricoes(await response.json());
-      setErrorInscricoes(null);
-    } catch (err) { 
-        setErrorInscricoes(err.message); 
-    } 
-    finally { 
-        setIsLoadingInscricoes(false); 
-    }
-  }, [token]);
-
-
-  // --- Efeito para buscar TODOS os dados quando a página carrega ---
-  useEffect(() => {
-    fetchMensagens();
-    fetchEventos();
-    fetchAtividades(); 
-    fetchDocumentos(); 
-    fetchMetas();
-    fetchInscricoes();
-  }, [fetchMensagens, fetchEventos, fetchAtividades, fetchDocumentos, fetchMetas, fetchInscricoes]);
-
-
-  // -------------------------------------------------------------
-  // --- FUNÇÕES DE CONTROLE DE MODAIS (CORRIGIDAS) ---
-  // -------------------------------------------------------------
-
-  const handleOpenEditAtividadeModal = (id) => {
-    setCurrentAtividadeId(id);
-    setIsEditAtividadeModalOpen(true);
-  };
-  const handleCloseEditAtividadeModal = () => {
-    setIsEditAtividadeModalOpen(false);
-    setCurrentAtividadeId(null);
-    fetchAtividades(); 
-  };
-
-  const handleOpenEditDocModal = (id) => {
-    setCurrentDocId(id);
-    setIsEditDocModalOpen(true);
-  };
-  const handleCloseEditDocModal = () => {
-    setIsEditDocModalOpen(false);
-    setCurrentDocId(null);
-    fetchDocumentos(); 
-  };
-
-  const handleOpenEditMetaModal = (id) => {
-    setCurrentMetaId(id);
-    setIsEditMetaModalOpen(true);
-  };
-  const handleCloseEditMetaModal = () => {
-    setIsEditMetaModalOpen(false);
-    setCurrentMetaId(null);
-    fetchMetas();
-  };
-
-
-  // ----------------------------------------------------------------------
-  // --- FUNÇÕES DE AÇÃO (Criar/Deletar) ---
-  // ----------------------------------------------------------------------
-  
-  // --- Eventos: Criar ---
-  const handleCreateEvento = async (e) => {
-    e.preventDefault();
-    setEventoFormError('');
-    setEventoFormSuccess('');
-
-    if (!token) {
-      setEventoFormError('Autenticação inválida.');
-      return;
-    }
-
-    try {
-      const response = await fetch('http://localhost:4000/api/eventos', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          titulo: eventoTitulo,
-          descricao: eventoDesc,
-          data: eventoData,
-          local: eventoLocal,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Erro ao criar evento.');
-      }
-
-      setEventoFormSuccess('Evento criado com sucesso!');
-      setEventoTitulo('');
-      setEventoDesc('');
-      setEventoData('');
-      setEventoLocal('');
-      fetchEventos();
-      
-    } catch (error) {
-      console.error('Erro ao criar evento:', error.message);
-      setEventoFormError(error.message);
-    }
-  };
-
-  // --- Eventos: Deletar ---
-  const handleDeleteEvento = async (eventoId) => {
-    if (!window.confirm('Tem certeza que deseja apagar este evento?')) return;
-    
-    try {
-      const response = await fetch(`http://localhost:4000/api/eventos/${eventoId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao apagar evento.');
-      }
-
-      fetchEventos();
-    } catch (error) {
-      alert(`Falha ao apagar evento: ${error.message}`);
-      console.error('Erro ao apagar evento:', error);
-    }
-  };
-
-  // --- Atividades: Criar ---
-  const handleCreateAtividade = async (e) => {
-    e.preventDefault();
-    setAtivFormError('');
-    setAtivFormSuccess('');
-
-    if (!ativTitulo || !ativDescricao || !imagem1) {
-      setAtivFormError('Preencha Título, Descrição e Imagem 1.');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('titulo', ativTitulo);
-    formData.append('descricao', ativDescricao);
-    
-    if (imagem1) formData.append('images', imagem1);
-    if (imagem2) formData.append('images', imagem2);
-    if (imagem3) formData.append('images', imagem3);
-    if (imagem4) formData.append('images', imagem4);
-
-    try {
-      const response = await fetch('http://localhost:4000/api/atividades', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Erro ao criar atividade.');
-      }
-
-      setAtivFormSuccess('Atividade criada com sucesso!');
-      setAtivTitulo('');
-      setAtivDescricao('');
-      setImagem1(null);
-      setImagem2(null);
-      setImagem3(null);
-      setImagem4(null);
-      e.target.reset();
-      fetchAtividades();
-    } catch (error) {
-      console.error('Erro ao criar atividade:', error.message);
-      setAtivFormError(error.message);
-    }
-  };
-
-  // --- Atividades: Deletar ---
-  const handleDeleteAtividade = async (atividadeId) => {
-    if (!window.confirm('Tem certeza que deseja apagar esta atividade?')) return;
-    
-    try {
-      const response = await fetch(`http://localhost:4000/api/atividades/${atividadeId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao apagar atividade.');
-      }
-
-      fetchAtividades();
-    } catch (error) {
-      alert(`Falha ao apagar atividade: ${error.message}`);
-      console.error('Erro ao apagar atividade:', error);
-    }
-  };
-
-  // --- Documentos: Criar ---
-  const handleCreateDocumento = async (e) => {
-    e.preventDefault();
-    setDocFormError('');
-    setDocFormSuccess('');
-
-    if (!docTitulo || !docArquivo) {
-      setDocFormError('Preencha Título e selecione o Ficheiro PDF.');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('titulo', docTitulo);
-    formData.append('arquivo', docArquivo);
-
-    try {
-      const response = await fetch('http://localhost:4000/api/documentos', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` },
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Erro ao criar documento.');
-      }
-
-      setDocFormSuccess('Documento criado com sucesso!');
-      setDocTitulo('');
-      setDocArquivo(null);
-      e.target.reset();
-      fetchDocumentos();
-    } catch (error) {
-      console.error('Erro ao criar documento:', error.message);
-      setDocFormError(error.message);
-    }
-  };
-
-  // --- Documentos: Deletar ---
-  const handleDeleteDocumento = async (docId) => {
-    if (!window.confirm('Tem certeza que deseja apagar este documento?')) return;
-
-    try {
-      const response = await fetch(`http://localhost:4000/api/documentos/${docId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao apagar documento.');
-      }
-
-      fetchDocumentos();
-    } catch (error) {
-      alert(`Falha ao apagar documento: ${error.message}`);
-      console.error('Erro ao apagar documento:', error);
-    }
-  };
-
-  // --- Metas: Criar ---
-  const handleCreateMeta = async (e) => {
-    e.preventDefault();
-    setMetaFormError('');
-    setMetaFormSuccess('');
-
-    const valorNumerico = parseFloat(metaValor);
-    if (isNaN(valorNumerico) || valorNumerico <= 0) {
-      setMetaFormError('O valor da meta deve ser um número positivo.');
-      return;
-    }
-
-    try {
-      const response = await fetch('http://localhost:4000/api/metas', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          titulo: metaTitulo,
-          valor_meta: valorNumerico,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Erro ao criar meta.');
-      }
-
-      setMetaFormSuccess('Meta criada com sucesso!');
-      setMetaTitulo('');
-      setMetaValor('');
-      fetchMetas();
-      
-    } catch (error) {
-      console.error('Erro ao criar meta:', error.message);
-      setMetaFormError(error.message);
-    }
-  };
-
-  // --- Metas: Deletar ---
-  const handleDeleteMeta = async (metaId) => {
-    if (!window.confirm('Tem certeza que deseja apagar esta meta?')) return;
-    
-    try {
-      const response = await fetch(`http://localhost:4000/api/metas/${metaId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erro ao apagar meta.');
-      }
-
-      fetchMetas();
-    } catch (error) {
-      alert(`Falha ao apagar meta: ${error.message}`);
-      console.error('Erro ao apagar meta:', error);
-    }
-  };
-
-
-  // --- Funções de Renderização (Estão corretas e foram mantidas) ---
-  
-  const renderMensagensContent = () => {
-    if (isLoadingMensagens) return <tr><td colSpan="3" style={{ textAlign: 'center' }}>A carregar...</td></tr>;
-    if (errorMensagens) return <tr><td colSpan="3" style={{ textAlign: 'center', color: 'red' }}>{errorMensagens}</td></tr>;
-    if (mensagens.length === 0) return <tr><td colSpan="3" style={{ textAlign: 'center' }}>Nenhuma mensagem.</td></tr>;
-    return mensagens.map((msg) => (
-      <tr key={msg.id}>
-        <td>{msg.nome} ({msg.email})</td>
-        <td>{msg.mensagem}</td>
-        <td>{msg.data_formatada}</td>
-      </tr>
-    ));
-  };
-
-  const renderEventosContent = () => {
-    if (isLoadingEventos) return <tr><td colSpan="4" style={{ textAlign: 'center' }}>A carregar...</td></tr>;
-    if (errorEventos) return <tr><td colSpan="4" style={{ textAlign: 'center', color: 'red' }}>{errorEventos}</td></tr>;
-    if (eventos.length === 0) return <tr><td colSpan="4" style={{ textAlign: 'center' }}>Nenhum evento.</td></tr>;
-    return eventos.map((evento) => (
-      <tr key={evento.id}>
-        <td>{evento.titulo}</td>
-        <td>{evento.data_formatada}</td>
-        <td>{evento.local}</td>
-        <td>
-          <button onClick={() => handleDeleteEvento(evento.id)} className="btn btn-red" style={{ padding: '5px 10px', fontSize: '12px' }}>
-            Apagar
-          </button>
-        </td>
-        
-      </tr>
-    ));
-  };
-
-  const renderAtividadesContent = () => {
-    if (isLoadingAtividades) return <tr><td colSpan="3" style={{ textAlign: 'center' }}>A carregar...</td></tr>;
-    if (errorAtividades) return <tr><td colSpan="3" style={{ textAlign: 'center', color: 'red' }}>{errorAtividades}</td></tr>;
-    if (atividades.length === 0) return <tr><td colSpan="3" style={{ textAlign: 'center' }}>Nenhuma atividade.</td></tr>;
-    return atividades.map((ativ) => (
-      <tr key={ativ.id}>
-        <td>{ativ.titulo}</td>
-        <td>{ativ.descricao.substring(0, 50)}...</td>
-        <td style={{ display: 'flex', gap: '5px' }}>
-          <button 
-            onClick={() => handleOpenEditAtividadeModal(ativ.id)} 
-            className="btn btn-secondary" 
-            style={{ padding: '5px 10px', fontSize: '12px', color: '#111F44', backgroundColor: '#fff', borderColor: '#111F44' }}
-          >
-            Editar
-          </button>
-          <button 
-            onClick={() => handleDeleteAtividade(ativ.id)} 
-            className="btn btn-red" 
-            style={{ padding: '5px 10px', fontSize: '12px' }}
-          >
-            Apagar
-          </button>
-        </td>
-      </tr>
-    ));
-  };
-
-  const renderDocumentosContent = () => {
-    if (isLoadingDocumentos) return <tr><td colSpan="3" style={{ textAlign: 'center' }}>A carregar...</td></tr>;
-    if (errorDocumentos) return <tr><td colSpan="3" style={{ textAlign: 'center', color: 'red' }}>{errorDocumentos}</td></tr>;
-    if (documentos.length === 0) return <tr><td colSpan="3" style={{ textAlign: 'center' }}>Nenhum documento.</td></tr>;
-    return documentos.map((doc) => (
-      <tr key={doc.id}>
-        <td>{doc.titulo}</td>
-        <td>
-          <a href={`http://localhost:4000/uploads/${doc.arquivo_url}`} target="_blank" rel="noopener noreferrer">
-            Ver PDF
-          </a>
-        </td>
-        <td style={{ display: 'flex', gap: '5px' }}>
-          <button 
-            onClick={() => handleOpenEditDocModal(doc.id)} 
-            className="btn btn-secondary" 
-            style={{ padding: '5px 10px', fontSize: '12px', color: '#111F44', backgroundColor: '#fff', borderColor: '#111F44' }}
-          >
-            Editar
-          </button>
-          <button 
-            onClick={() => handleDeleteDocumento(doc.id)} 
-            className="btn btn-red" 
-            style={{ padding: '5px 10px', fontSize: '12px' }}
-          >
-            Apagar
-          </button>
-        </td>
-      </tr>
-    ));
-  };
-
-  const renderMetasContent = () => {
-    if (isLoadingMetas) return <tr><td colSpan="3" style={{ textAlign: 'center' }}>A carregar...</td></tr>;
-    if (errorMetas) return <tr><td colSpan="3" style={{ textAlign: 'center', color: 'red' }}>{errorMetas}</td></tr>;
-    if (metas.length === 0) return <tr><td colSpan="3" style={{ textAlign: 'center' }}>Nenhuma meta.</td></tr>;
-    return metas.map((meta) => {
-      const porcentagem = meta.valor_meta > 0 ? (meta.valor_atual / meta.valor_meta) * 100 : 0;
-      return (
-        <tr key={meta.id}>
-          <td>{meta.titulo}</td>
-          <td>
-            <div className="progress-bar" style={{ margin: 0 }}>
-              <div 
-                className="progress-fill" 
-                style={{ width: `${Math.min(porcentagem, 100)}%` }}
-              ></div>
-            </div>
-            <div className="goal-labels" style={{ marginTop: '5px' }}>
-              <span className="current-amount">R$ {meta.valor_atual}</span>
-              <span className="goal-amount">Meta: R$ {meta.valor_meta}</span>
-            </div>
-          </td>
-          <td style={{ display: 'flex', gap: '5px' }}>
-            <button 
-              onClick={() => handleOpenEditMetaModal(meta.id)} 
-              className="btn btn-secondary" 
-              style={{ padding: '5px 10px', fontSize: '12px', color: '#111F44', backgroundColor: '#fff', borderColor: '#111F44' }}
-            >
-              Editar
-            </button>
-            <button 
-              onClick={() => handleDeleteMeta(meta.id)} 
-              className="btn btn-red" 
-              style={{ padding: '5px 10px', fontSize: '12px' }}
-            >
-              Apagar
-            </button>
-          </td>
-        </tr>
-      );
-    });
-  };
-
-  const renderInscricoesContent = () => {
-    if (isLoadingInscricoes) return <tr><td colSpan="3" style={{ textAlign: 'center' }}>A carregar...</td></tr>;
-    if (errorInscricoes) return <tr><td colSpan="3" style={{ textAlign: 'center', color: 'red' }}>{errorInscricoes}</td></tr>;
-    if (inscricoes.length === 0) return <tr><td colSpan="3" style={{ textAlign: 'center' }}>Ninguém se inscreveu ainda.</td></tr>;
-    return inscricoes.map((insc) => (
-      <tr key={insc.id}>
-        <td>{insc.nome}</td>
-        <td>{insc.email}</td>
-        <td>{insc.data_formatada}</td>
-      </tr>
-    ));
-  };
-
-
-  // --- JSX (O que aparece na tela) ---
-  return (
-    <>
-      <main className="admin-dashboard-wrapper">
-        <div className="admin-dashboard-header">
-          <h1>Painel de Administração</h1>
-        </div>
-        <div className="admin-dashboard-container">
-          <div className="admin-col-left">
-            
-            {/* Card de CRIAR ATIVIDADE */}
-            <div className="admin-card">
-              <h2>Adicionar Nova Atividade (Carrossel)</h2>
-              {atividades.length >= 4 ? (
-                <div style={{ padding: '20px', backgroundColor: '#f0f4f8', borderRadius: '8px', textAlign: 'center' }}>
-                  <h3 style={{ color: '#C6421E', marginBottom: '10px' }}>Limite Atingido</h3>
-                  <p>O carrossel suporta no máximo 4 atividades. Exclua uma antiga para adicionar uma nova.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleCreateAtividade}>
-                  <div className="form-group">
-                    <label htmlFor="ativ-titulo" className="form-label">Título da Atividade</label>
-                    <input type="text" id="ativ-titulo" className="form-input" value={ativTitulo} onChange={(e) => setAtivTitulo(e.target.value)} required />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="ativ-desc" className="form-label">Descrição</label>
-                    <textarea id="ativ-desc" className="form-textarea" style={{ backgroundColor: '#fff' }} value={ativDescricao} onChange={(e) => setAtivDescricao(e.target.value)} required></textarea>
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="ativ-img1" className="form-label">Imagem 1 (Obrigatória)</label>
-                    <input type="file" id="ativ-img1" className="form-input" onChange={(e) => setImagem1(e.target.files[0])} required />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="ativ-img2" className="form-label">Imagem 2</label>
-                    <input type="file" id="ativ-img2" className="form-input" onChange={(e) => setImagem2(e.target.files[0])} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="ativ-img3" className="form-label">Imagem 3</label>
-                    <input type="file" id="ativ-img3" className="form-input" onChange={(e) => setImagem3(e.target.files[0])} />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="ativ-img4" className="form-label">Imagem 4</label>
-                    <input type="file" id="ativ-img4" className="form-input" onChange={(e) => setImagem4(e.target.files[0])} />
-                  </div>
-                  {ativFormError && <p style={{ color: 'red', fontWeight: '600', marginBottom: '15px' }}>{ativFormError}</p>}
-                  {ativFormSuccess && <p style={{ color: 'green', fontWeight: '600', marginBottom: '15px' }}>{ativFormSuccess}</p>}
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Salvar Nova Atividade</button>
-                </form>
-              )}
-            </div>
-
-            {/* Card de CRIAR DOCUMENTO */}
-            <div className="admin-card">
-              <h2>Adicionar Documento (Transparência)</h2>
-              {documentos.length >= 4 ? (
-                <div style={{ padding: '20px', backgroundColor: '#f0f4f8', borderRadius: '8px', textAlign: 'center' }}>
-                  <h3 style={{ color: '#C6421E', marginBottom: '10px' }}>Limite Atingido</h3>
-                  <p>A secção suporta no máximo 4 documentos. Exclua um antigo para adicionar um novo.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleCreateDocumento}>
-                  <div className="form-group">
-                    <label htmlFor="doc-titulo" className="form-label">Título do Documento</label>
-                    <input type="text" id="doc-titulo" className="form-input" value={docTitulo} onChange={(e) => setDocTitulo(e.target.value)} required />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="doc-arquivo" className="form-label">Ficheiro PDF (Obrigatório)</label>
-                    <input type="file" id="doc-arquivo" className="form-input" accept=".pdf" onChange={(e) => setDocArquivo(e.target.files[0])} required />
-                  </div>
-                  {docFormError && <p style={{ color: 'red', fontWeight: '600', marginBottom: '15px' }}>{docFormError}</p>}
-                  {docFormSuccess && <p style={{ color: 'green', fontWeight: '600', marginBottom: '15px' }}>{docFormSuccess}</p>}
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Salvar Novo Documento</button>
-                </form>
-              )}
-            </div>
-
-            {/* Card de CRIAR META */}
-            <div className="admin-card">
-              <h2>Adicionar Nova Meta de Arrecadação</h2>
-              {metas.length >= 4 ? ( 
-                <div style={{ padding: '20px', backgroundColor: '#f0f4f8', borderRadius: '8px', textAlign: 'center' }}>
-                  <h3 style={{ color: '#C6421E', marginBottom: '10px' }}>Limite Atingido</h3>
-                  <p>O painel suporta no máximo 4 metas. Exclua uma antiga para adicionar uma nova.</p>
-                </div>
-              ) : (
-                <form onSubmit={handleCreateMeta}>
-                  <div className="form-group">
-                    <label htmlFor="meta-titulo" className="form-label">Título da Meta (Ex: Ação de Natal)</label>
-                    <input type="text" id="meta-titulo" className="form-input" value={metaTitulo} onChange={(e) => setMetaTitulo(e.target.value)} required />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="meta-valor" className="form-label">Valor da Meta (Ex: 10000.00)</label>
-                    <input type="number" step="0.01" id="meta-valor" className="form-input" value={metaValor} onChange={(e) => setMetaValor(e.target.value)} required />
-                  </div>
-                  
-                  {metaFormError && <p style={{ color: 'red', fontWeight: '600', marginBottom: '15px' }}>{metaFormError}</p>}
-                  {metaFormSuccess && <p style={{ color: 'green', fontWeight: '600', marginBottom: '15px' }}>{metaFormSuccess}</p>}
-
-                  <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Salvar Nova Meta</button>
-                </form>
-              )}
-            </div>
-
-            {/* Card de CRIAR EVENTO */}
-            <div className="admin-card">
-              <h2>Adicionar Novo Evento</h2>
-              <form onSubmit={handleCreateEvento}>
-                <div className="form-group">
-                  <label htmlFor="evento-titulo" className="form-label">Título</label>
-                  <input type="text" id="evento-titulo" className="form-input" value={eventoTitulo} onChange={(e) => setEventoTitulo(e.target.value)} required />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="evento-data" className="form-label">Data (AAAA-MM-DD)</label>
-                  <input type="date" id="evento-data" className="form-input" value={eventoData} onChange={(e) => setEventoData(e.target.value)} required />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="evento-local" className="form-label">Local</label>
-                  <input type="text" id="evento-local" className="form-input" value={eventoLocal} onChange={(e) => setEventoLocal(e.target.value)} required />
-                </div>
-                <div className="form-group">
-                  <label htmlFor="evento-desc" className="form-label">Descrição (para notificação)</label>
-                  <textarea id="evento-desc" className="form-textarea" style={{ backgroundColor: '#fff' }} value={eventoDesc} onChange={(e) => setEventoDesc(e.target.value)} required></textarea>
-                </div>
-                
-                {eventoFormError && <p style={{ color: 'red', fontWeight: '600', marginBottom: '15px' }}>{eventoFormError}</p>}
-                {eventoFormSuccess && <p style={{ color: 'green', fontWeight: '600', marginBottom: '15px' }}>{eventoFormSuccess}</p>}
-
-                <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Salvar Novo Evento</button>
-              </form>
-            </div>
-          </div>
-
-          {/* --- COLUNA DA DIREITA (Listas) --- */}
-          <div className="admin-col-right">
-            
-            {/* Card de LISTAR METAS */}
-            <div className="admin-card">
-              <h2>Metas de Arrecadação Atuais</h2>
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Título</th>
-                    <th>Progresso</th>
-                    <th>Ação</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {renderMetasContent()}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Card de LISTAR DOCUMENTOS */}
-            <div className="admin-card">
-              <h2>Documentos Atuais (Transparência)</h2>
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Título</th>
-                    <th>Ver</th>
-                    <th>Ação</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {renderDocumentosContent()}
-                </tbody>
-              </table>
-            </div>
-            
-            {/* Card de LISTAR ATIVIDADES */}
-            <div className="admin-card">
-              <h2>Atividades Atuais (Carrossel)</h2>
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Título</th>
-                    <th>Descrição (Início)</th>
-                    <th>Ação</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {renderAtividadesContent()}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Card de LISTAR EVENTOS */}
-            <div className="admin-card">
-              <h2>Eventos Atuais</h2>
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Evento</th>
-                    <th>Data</th>
-                    <th>Local</th>
-                    <th>Ação</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {renderEventosContent()}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Card de LISTAR MENSAGENS */}
-            <div className="admin-card">
-              <h2>Mensagens da Ouvidoria</h2>
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>De</th>
-                    <th>Mensagem</th>
-                    <th>Data</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {renderMensagensContent()}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Card de LISTAR INSCRIÇÕES */}
-            <div className="admin-card">
-              <h2>Possíveis Participantes (Notificações)</h2>
-              <table className="admin-table">
-                <thead>
-                  <tr>
-                    <th>Nome</th>
-                    <th>Email</th>
-                    <th>Data de Inscrição</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {renderInscricoesContent()}
-                </tbody>
-              </table>
-            </div>
-            
-            {/* Card de Doações (Estático) */}
-            <div className="admin-card">
-              <h2>Acompanhar Doações</h2>
-              <table className="admin-table">
-                <tbody><tr><td>(Dados de doação virão aqui)</td><td>R$ 50,00</td></tr></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {/* RENDERIZAÇÃO DOS MODAIS (Pop-ups) */}
-      {isEditAtividadeModalOpen && (
-        <EditAtividadeModal 
-          atividadeId={currentAtividadeId} 
-          onClose={handleCloseEditAtividadeModal}
-          onSave={fetchAtividades} 
-        />
-      )}
-      
-      {isEditDocModalOpen && (
-        <EditDocumentoModal
-          documentoId={currentDocId}
-          onClose={handleCloseEditDocModal}
-          onSave={fetchDocumentos} 
-        />
-      )}
-      
-      {isEditMetaModalOpen && (
-        <EditMetaModal
-          metaId={currentMetaId}
-          onClose={handleCloseEditMetaModal}
-          onSave={fetchMetas}
-        />
-      )}
-    </>
-  );
->>>>>>> a3fd0cb31eaa2e015bbf28109434b1e461b310de
 }
 
 export default AdminPage;
-=======
-    const { token } = useAuth();
-
-    const API_BASE = process.env.REACT_APP_API_URL || 'https://instituto-alma-backend-azure-production.up.railway.app';
-
-    // Estados dos modais
-    const [modalState, setModalState] = useState({
-        atividade: null,
-        documento: null,
-        meta: null,
-        evento: null
-    });
-
-    // Dados gerais
-    const [mensagens, setMensagens] = useState([]);
-    const [eventos, setEventos] = useState([]);
-    const [atividades, setAtividades] = useState([]);
-    const [documentos, setDocumentos] = useState([]);
-    const [metas, setMetas] = useState([]);
-    const [inscricoes, setInscricoes] = useState([]);
-
-    // Loading e erros
-    const [loading, setLoading] = useState({
-        mensagens: true,
-        eventos: true,
-        atividades: true,
-        documentos: true,
-        metas: true,
-        inscricoes: true
-    });
-    const [error, setError] = useState({
-        mensagens: null,
-        eventos: null,
-        atividades: null,
-        documentos: null,
-        metas: null,
-        inscricoes: null
-    });
-
-    // Formulários
-    const [forms, setForms] = useState({
-        evento: { titulo: '', descricao: '', data: '', local: '', success: '', error: '' },
-        atividade: { titulo: '', descricao: '', imagens: [], success: '', error: '' },
-        documento: { titulo: '', arquivo: null, success: '', error: '' },
-        meta: { titulo: '', valor: '', success: '', error: '' }
-    });
-
-    // Função genérica de fetch
-    const fetchData = useCallback(async (url, setState, setLoadingKey, setErrorKey, options = {}) => {
-        setLoading(prev => ({ ...prev, [setLoadingKey]: true }));
-        try {
-            const response = await fetch(url, options);
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Erro ao buscar dados.');
-            setState(data);
-            setError(prev => ({ ...prev, [setErrorKey]: null }));
-        } catch (err) {
-            setError(prev => ({ ...prev, [setErrorKey]: err.message }));
-        } finally {
-            setLoading(prev => ({ ...prev, [setLoadingKey]: false }));
-        }
-    }, []);
-
-    // Fetch inicial
-    useEffect(() => {
-        fetchData(`${API_BASE}/api/ouvidoria`, setMensagens, 'mensagens', 'mensagens', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        fetchData(`${API_BASE}/api/eventos`, setEventos, 'eventos', 'eventos');
-        fetchData(`${API_BASE}/api/atividades`, setAtividades, 'atividades', 'atividades');
-        fetchData(`${API_BASE}/api/documentos`, setDocumentos, 'documentos', 'documentos');
-        fetchData(`${API_BASE}/api/metas`, setMetas, 'metas', 'metas');
-        fetchData(`${API_BASE}/api/inscricoes`, setInscricoes, 'inscricoes', 'inscricoes', {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-    }, [fetchData, token, API_BASE]);
-
-    // Abrir/Fechar modais
-    const openModal = (type, id) => setModalState(prev => ({ ...prev, [type]: id }));
-    const closeModal = (type) => setModalState(prev => ({ ...prev, [type]: null }));
-
-    // Função genérica para deletar
-    const handleDelete = async (type, id) => {
-        if (!window.confirm('Tem certeza que deseja apagar?')) return;
-        try {
-            const response = await fetch(`${API_BASE}/api/${type}/${id}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.message || 'Erro ao apagar.');
-            }
-            // Atualiza a lista após deletar
-            switch (type) {
-                case 'atividades': fetchData(`${API_BASE}/api/atividades`, setAtividades, 'atividades', 'atividades'); break;
-                case 'documentos': fetchData(`${API_BASE}/api/documentos`, setDocumentos, 'documentos', 'documentos'); break;
-                case 'metas': fetchData(`${API_BASE}/api/metas`, setMetas, 'metas', 'metas'); break;
-                case 'eventos': fetchData(`${API_BASE}/api/eventos`, setEventos, 'eventos', 'eventos'); break;
-                default: break;
-            }
-        } catch (err) {
-            alert(err.message);
-        }
-    };
-
-    // Função genérica para criar
-    const handleCreate = async (type, formData) => {
-        try {
-            const headers = type === 'atividade' || type === 'documento' 
-                ? { 'Authorization': `Bearer ${token}` } 
-                : { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
-            
-            const body = type === 'atividade' || type === 'documento' ? formData : JSON.stringify(formData);
-            const response = await fetch(`${API_BASE}/api/${type === 'atividade' ? 'atividades' : type === 'documento' ? 'documentos' : type === 'meta' ? 'metas' : 'eventos'}`, { 
-                method: 'POST', headers, body 
-            });
-
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.message || 'Erro ao criar.');
-            
-            setForms(prev => ({ ...prev, [type]: { ...prev[type], success: 'Criado com sucesso!', error: '' } }));
-            setForms(prev => ({ ...prev, [type]: { ...prev[type], titulo: '', descricao: '', data: '', local: '', valor: '', arquivo: null, imagens: [] } }));
-            fetchData(`${API_BASE}/api/${type === 'atividade' ? 'atividades' : type === 'documento' ? 'documentos' : type === 'meta' ? 'metas' : 'eventos'}`, eval(`set${type.charAt(0).toUpperCase() + type.slice(1)}`), type, type);
-        } catch (err) {
-            setForms(prev => ({ ...prev, [type]: { ...prev[type], error: err.message, success: '' } }));
-        }
-    };
-
-    return (
-        <main className="admin-dashboard-wrapper">
-            <h1>Painel de Administração</h1>
-            <div className="admin-dashboard-container">
-                <div className="admin-col-left">{/* Formulários */}</div>
-                <div className="admin-col-right">{/* Listagens */}</div>
-            </div>
-
-            {/* Modais */}
-            {modalState.atividade && <EditAtividadeModal atividadeId={modalState.atividade} onClose={() => closeModal('atividade')} onSave={() => fetchData(`${API_BASE}/api/atividades`, setAtividades, 'atividades', 'atividades')} />}
-            {modalState.documento && <EditDocumentoModal documentoId={modalState.documento} onClose={() => closeModal('documento')} onSave={() => fetchData(`${API_BASE}/api/documentos`, setDocumentos, 'documentos', 'documentos')} />}
-            {modalState.meta && <EditMetaModal metaId={modalState.meta} onClose={() => closeModal('meta')} onSave={() => fetchData(`${API_BASE}/api/metas`, setMetas, 'metas', 'metas')} />}
-            {modalState.evento && <EditEventoModal eventoId={modalState.evento} onClose={() => closeModal('evento')} onSave={() => fetchData(`${API_BASE}/api/eventos`, setEventos, 'eventos', 'eventos')} />}
-        </main>
-    );
-}
-
-export default AdminPage;
->>>>>>> 36459763d99eeb273565214ac8a8f965078ce46d
