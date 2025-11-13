@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import EventModal from '../components/EventModal.jsx'; 
 
 // Define a URL base da API (Esta é a sintaxe final que deve funcionar no Vercel)
-const API_URL = process.env.RAILWAY_API_URL || 'http://localhost:4000';
+const API_URL = process.env.RAILWAY_API_URL || 'https://instituto-alma-backend-azure-production.up.railway.app';
 
 const formatDate = (dateString) => {
     if (!dateString) return '';
