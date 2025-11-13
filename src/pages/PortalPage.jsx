@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
 
-// Define a URL base da API (Isto garante que a variável RAILWAY_API_URL seja usada)
-const API_URL = process.env.RAILWAY_API_URL || 'http://localhost:4000';
+// Define a URL base da API (Usa a variável do Vercel/Railway)
+const API_URL = process.env.RAILWAY_API_URL || 'https://instituto-alma-backend-azure-production.up.railway.app';
 
 function PortalPage() {
     const navigate = useNavigate();
@@ -31,7 +31,7 @@ function PortalPage() {
         setLoading(true);
 
         try {
-            // Usa a variável API_URL definida no topo
+            // CORRIGIDO: Usa a variável de ambiente API_URL
             const response = await fetch(`${API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -62,7 +62,7 @@ function PortalPage() {
         setLoading(true);
 
         try {
-            // Usa a variável API_URL definida no topo
+            // CORRIGIDO: Usa a variável de ambiente API_URL
             const response = await fetch(`${API_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -102,8 +102,7 @@ function PortalPage() {
                 <div className="thin-bar" style={{ backgroundColor: '#6efff1' }}></div>
             </div>
 
-            {/* CORREÇÃO DO LAYOUT: CONTAINER FIXO DE DUAS COLUNAS COMO NA IMAGEM */}
-            {/* O SEU CSS DEVE APLICAR FLEX OU GRID A portal-container-columns */}
+            {/* CORREÇÃO DO LAYOUT: CONTAINER QUE ABRIGA AS DUAS COLUNAS CENTRAIS */}
             <div className="portal-container-columns">
                 
                 {/* --- COLUNA DE LOGIN --- */}
