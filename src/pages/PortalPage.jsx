@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 function PortalPage() {
   const navigate = useNavigate();
-  const API_URL = import.meta.env.VITE_API_URL; // ✅ agora vem do .env
+  const API_URL = import.meta.env.VITE_API_URL;
 
   const [activeTab, setActiveTab] = useState('login');
   const [loading, setLoading] = useState(false);
@@ -12,6 +12,7 @@ function PortalPage() {
   const [registerData, setRegisterData] = useState({ nome: '', email: '', senha: '', error: '', success: '' });
   const [resetData, setResetData] = useState({ email: '', error: '', success: '' });
 
+  // Função genérica para atualizar inputs
   const handleChange = (setter) => (e) => {
     const { name, value } = e.target;
     setter(prev => ({ ...prev, [name]: value, error: '', success: '' }));
@@ -100,35 +101,37 @@ function PortalPage() {
         <button onClick={() => setActiveTab('reset')} className={activeTab === 'reset' ? 'active' : ''}>Recuperar Senha</button>
       </div>
 
-      {activeTab === 'login' && (
-        <form onSubmit={handleLogin}>
-          {loginData.error && <p className="error">{loginData.error}</p>}
-          {loginData.success && <p className="success">{loginData.success}</p>}
-          <input type="email" name="email" placeholder="Email" value={loginData.email} onChange={handleChange(setLoginData)} />
-          <input type="password" name="senha" placeholder="Senha" value={loginData.senha} onChange={handleChange(setLoginData)} />
-          <button type="submit" disabled={loading}>{loading ? 'Carregando...' : 'Entrar'}</button>
-        </form>
-      )}
+      <div className="tab-content">
+        {activeTab === 'login' && (
+          <form onSubmit={handleLogin}>
+            {loginData.error && <p className="error">{loginData.error}</p>}
+            {loginData.success && <p className="success">{loginData.success}</p>}
+            <input type="email" name="email" placeholder="Email" value={loginData.email} onChange={handleChange(setLoginData)} />
+            <input type="password" name="senha" placeholder="Senha" value={loginData.senha} onChange={handleChange(setLoginData)} />
+            <button type="submit" disabled={loading}>{loading ? 'Carregando...' : 'Entrar'}</button>
+          </form>
+        )}
 
-      {activeTab === 'registro' && (
-        <form onSubmit={handleRegister}>
-          {registerData.error && <p className="error">{registerData.error}</p>}
-          {registerData.success && <p className="success">{registerData.success}</p>}
-          <input type="text" name="nome" placeholder="Nome" value={registerData.nome} onChange={handleChange(setRegisterData)} />
-          <input type="email" name="email" placeholder="Email" value={registerData.email} onChange={handleChange(setRegisterData)} />
-          <input type="password" name="senha" placeholder="Senha" value={registerData.senha} onChange={handleChange(setRegisterData)} />
-          <button type="submit" disabled={loading}>{loading ? 'Carregando...' : 'Registrar'}</button>
-        </form>
-      )}
+        {activeTab === 'registro' && (
+          <form onSubmit={handleRegister}>
+            {registerData.error && <p className="error">{registerData.error}</p>}
+            {registerData.success && <p className="success">{registerData.success}</p>}
+            <input type="text" name="nome" placeholder="Nome" value={registerData.nome} onChange={handleChange(setRegisterData)} />
+            <input type="email" name="email" placeholder="Email" value={registerData.email} onChange={handleChange(setRegisterData)} />
+            <input type="password" name="senha" placeholder="Senha" value={registerData.senha} onChange={handleChange(setRegisterData)} />
+            <button type="submit" disabled={loading}>{loading ? 'Carregando...' : 'Registrar'}</button>
+          </form>
+        )}
 
-      {activeTab === 'reset' && (
-        <form onSubmit={handleReset}>
-          {resetData.error && <p className="error">{resetData.error}</p>}
-          {resetData.success && <p className="success">{resetData.success}</p>}
-          <input type="email" name="email" placeholder="Email" value={resetData.email} onChange={handleChange(setResetData)} />
-          <button type="submit" disabled={loading}>{loading ? 'Carregando...' : 'Enviar link'}</button>
-        </form>
-      )}
+        {activeTab === 'reset' && (
+          <form onSubmit={handleReset}>
+            {resetData.error && <p className="error">{resetData.error}</p>}
+            {resetData.success && <p className="success">{resetData.success}</p>}
+            <input type="email" name="email" placeholder="Email" value={resetData.email} onChange={handleChange(setResetData)} />
+            <button type="submit" disabled={loading}>{loading ? 'Carregando...' : 'Enviar link'}</button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }
