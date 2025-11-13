@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; 
 
-// Define a URL base da API (Usa a variável do Vercel/Railway)
-const API_URL = process.env.RAILWAY_API_URL || 'https://instituto-alma-backend-azure-production.up.railway.app';
+// Define a URL base da API (Esta é a sintaxe final que deve funcionar no Vercel)
+const API_URL = process.env.RAILWAY_API_URL || 'http://localhost:4000';
 
 function PortalPage() {
     const navigate = useNavigate();
@@ -31,7 +31,7 @@ function PortalPage() {
         setLoading(true);
 
         try {
-            // CORRIGIDO: Usa a variável de ambiente API_URL
+            // Usa a variável API_URL definida no topo
             const response = await fetch(`${API_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -62,7 +62,7 @@ function PortalPage() {
         setLoading(true);
 
         try {
-            // CORRIGIDO: Usa a variável de ambiente API_URL
+            // Usa a variável API_URL definida no topo
             const response = await fetch(`${API_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -92,7 +92,6 @@ function PortalPage() {
         <main 
             className="portal-page-wrapper" 
             style={{ 
-                // Define o fundo com transparência e imagem
                 backgroundImage: "linear-gradient(rgba(17, 31, 68, 0.8), rgba(17, 31, 68, 0.8)), url('/documentos/paginadoar.JPG')"
             }}
         >
@@ -103,10 +102,10 @@ function PortalPage() {
             </div>
 
             {/* CORREÇÃO DO LAYOUT: CONTAINER QUE ABRIGA AS DUAS COLUNAS CENTRAIS */}
-            <div className="portal-container-columns">
+            <div className="portal-container">
                 
                 {/* --- COLUNA DE LOGIN --- */}
-                <div className="portal-card login-col">
+                <div className="login-col">
                     <h2>Login</h2>
                     <form onSubmit={handleLogin} className="portal-form">
                         <div className="form-group">
@@ -149,7 +148,7 @@ function PortalPage() {
                 </div>
 
                 {/* --- COLUNA DE INSCRIÇÃO --- */}
-                <div className="portal-card signup-col">
+                <div className="signup-col">
                     <h2>Inscrição</h2>
                     <form onSubmit={handleRegister} className="portal-form">
                         <div className="form-group">
@@ -198,7 +197,7 @@ function PortalPage() {
                     </form>
                 </div>
                 
-            </div> {/* Fim de portal-container-columns */}
+            </div> {/* Fim de portal-container */}
 
             <div className="bottom-color-bars">
                 <div className="bottom-bar" style={{ backgroundColor: '#f06678' }}></div>
