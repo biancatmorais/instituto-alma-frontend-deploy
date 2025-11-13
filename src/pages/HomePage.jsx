@@ -67,14 +67,19 @@ const fetchEventos = useCallback(async () => {
     }
   }, []);
 
-  const fetchAtividades = useCallback(async () => {
-    setIsLoadingAtividades(true);
-    try {
-      const response = await fetch('http://localhost:4000/api/atividades');
-      if (!response.ok) throw new Error('Falha ao buscar atividades');
-      const data = await response.json();
-      setAtividades(data);
-      setErrorAtividades(null);
+ const fetchAtividades = useCallback(async () => {
+  setIsLoadingAtividades(true);
+  try {
+    // 1️⃣ URL via variável de ambiente
+    const API_URL = process.env.REACT_APP_API_URL;
+    const response = await fetch(`${API_URL}/api/atividades`);
+
+    if (!response.ok) throw new Error('Falha ao buscar atividades');
+
+    const data = await response.json();
+
+    setAtividades(data);
+    setErrorAtividades(null);
     } catch (err) {
       setErrorAtividades(err.message);
     } finally {
@@ -260,10 +265,10 @@ const fetchEventos = useCallback(async () => {
       mensagem: ouvidoriaMensagem
     };
     try {
-      const response = await fetch('http://localhost:4000/api/ouvidoria', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+     const response = await fetch(`${API_URL}/api/ouvidoria`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
       });
       const data = await response.json();
       if (response.ok) {
